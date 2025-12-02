@@ -3,7 +3,7 @@ from pygame.locals import *
 
 pygame.init()
 
-scale = 0.6
+scale = 0.8
 slowerEnemy = False
 clock = pygame.time.Clock()
 fps = 60
@@ -78,7 +78,7 @@ class Player():
 			#get keypresses
 			key = pygame.key.get_pressed()
 			if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
-				self.vel_y = -15*(scale)
+				self.vel_y = -15
 				self.jumped = True
 			if key[pygame.K_SPACE] == False:
 				self.jumped = False
@@ -115,7 +115,7 @@ class Player():
 			self.vel_y += 1
 			if self.vel_y > 10:
 				self.vel_y = 10
-			dy += self.vel_y*scale
+			dy += self.vel_y*(scale*1.1)
 
 			#check for collision
 			self.in_air = True
