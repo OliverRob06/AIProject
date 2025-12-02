@@ -141,6 +141,10 @@ class Player():
 			#check for collision with lava
 			if pygame.sprite.spritecollide(self, lava_group, False):
 				game_over = -1
+			
+			#check for collision with exit
+			if pygame.sprite.spritecollide(self, exit_group, False):
+				game_over = 1
 
 			#update player coordinates
 			self.rect.x += dx
@@ -219,7 +223,9 @@ class World():
 				if tile == 6:
 					lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
 					lava_group.add(lava)
-
+				if tile == 8:
+					exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
+					exit_group.add(exit)
 				col_count += 1
 			row_count += 1
 
@@ -269,9 +275,17 @@ class Lava(pygame.sprite.Sprite):
 		self.rect.x = x
 		self.rect.y = y
 
+class Exit(pygame.sprite.Sprite):
+	def __init__(self, x, y):
+		pygame.sprite.Sprite.__init__(self)
+		img = pygame.image.load('img/exit.png')
+		self.image = pygame.transform.scale(img, (tile_size, int(tile_size * 1.5)))
+		self.rect = self.image.get_rect()
+		self.rect.x = x
+		self.rect.y = y
 
 
-
+#1 = dirt block, 2 = grass block, 3 = enemy, 6 = lava, 8 = exit
 world_data = [
 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
@@ -301,6 +315,7 @@ player = Player(100, screen_height - 130)
 
 blob_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
+exit_group = pygame.sprite.Group()
 
 world = World(world_data)
 
@@ -331,6 +346,7 @@ while run:
 		
 		blob_group.draw(screen)
 		lava_group.draw(screen)
+		exit_group.draw(screen)
 
 		game_over = player.update(game_over)
 
@@ -339,6 +355,11 @@ while run:
 			if restart_button.draw():
 				player.reset(100, screen_height - 130)
 				game_over = 0
+
+		#if player reaches exit
+		#if game_over ==1:
+			#display gameover screen
+
 
 
 	for event in pygame.event.get():
