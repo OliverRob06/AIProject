@@ -114,7 +114,7 @@ class Player():
 			self.vel_y += 1
 			if self.vel_y > 10:
 				self.vel_y = 10
-			dy += self.vel_y
+			dy += self.vel_y*scale
 
 			#check for collision
 			self.in_air = True
