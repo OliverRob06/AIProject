@@ -29,6 +29,7 @@ bg_img = pygame.image.load('img/sky.png')
 restart_img = pygame.image.load('img/restart_btn.png')
 start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
+win_img = pygame.image.load('img/youwin.png')
 
 
 
@@ -297,7 +298,7 @@ class Exit(pygame.sprite.Sprite):
 		self.rect.y = y
 
 
-#1 = dirt block, 2 = grass block, 3 = enemy, 6 = lava, 8 = exit
+#1 = dirt block, 2 = grass block, 3 = enemy, 6 = lava, 7 = cloud, 8 = goal
 world_data = [
 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
@@ -339,6 +340,7 @@ world = World(world_data)
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
 start_button = Button(screen_width // 2 - 350, screen_height // 2, start_img)
 exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
+win_button = Button(screen_width //2, screen_height// 2, win_img)
 
 
 run = True
@@ -378,8 +380,9 @@ while run:
 				game_over = 0
 
 		#if player reaches exit
-		#if game_over ==1:
-			#display gameover screen
+		if game_over == 1:
+			if win_button.draw():
+				run = False
 
 
 
