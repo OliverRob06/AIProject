@@ -155,6 +155,9 @@ class Player():
 			#check for collision with exit
 			if pygame.sprite.spritecollide(self, exit_group, False):
 				game_over = 1
+			
+			
+				
 
 			#update player coordinates
 			self.rect.x += dx
@@ -308,7 +311,7 @@ class Exit(pygame.sprite.Sprite):
 
 
 #1 = dirt block, 2 = grass block, 3 = enemy, 6 = lava, 7 = cloud, 8 = goal
-orld_data = [
+world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
 [1, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 8, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1], 
@@ -352,6 +355,7 @@ exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
 win_button = Button(screen_width //2 - 50, screen_height// 2, win_img)
 
 
+
 run = True
 while run:
 
@@ -359,23 +363,16 @@ while run:
 
 	screen.blit(bg_img, (0, 0))
 	screen.blit(sun_img, (100, 100))
-
-	if main_menu == True:
-		if exit_button.draw():
-			run = False
-		if start_button.draw():
-			main_menu = False
-	else:
-		world.draw()
-		if game_over == 0:
-			draw_text(' X ' + str(score), font_score, black, tile_size - 5, 4)
+	
+	world.draw()
+	if game_over == 0:
+		draw_text(' X ' + str(score), font_score, black, tile_size - 5, 4)
+		blob_group.update()
+		#update score
+		#check if a coin has been collected
+		if pygame.sprite.spritecollide(player, coin_group, True):
+			score += 1
 			
-
-			blob_group.update()
-			#update score
-			#check if a coin has been collected
-			if pygame.sprite.spritecollide(player, coin_group, True):
-				score += 1
 		
 		blob_group.draw(screen)
 		lava_group.draw(screen)
@@ -386,12 +383,11 @@ while run:
 
 		#if player has died
 		if game_over == -1:
-			if restart_button.draw():
 				player.reset(100, screen_height - 130)
 				game_over = 0
-				world.draw()
 				score = 0
-
+				world.draw()
+				
 		#if player reaches exit
 		if game_over == 1:
 			if win_button.draw():
