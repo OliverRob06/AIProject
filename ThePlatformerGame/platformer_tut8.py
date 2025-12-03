@@ -229,6 +229,7 @@ class World():
 		for row in data:
 			col_count = 0
 			for tile in row:
+				# dirt
 				if tile == 1:
 					img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
 					img_rect = img.get_rect()
@@ -236,6 +237,7 @@ class World():
 					img_rect.y = row_count * tile_size
 					tile = (img, img_rect)
 					self.tile_list.append(tile)
+				# grass
 				if tile == 2:
 					img = pygame.transform.scale(grass_img, (tile_size, tile_size))
 					img_rect = img.get_rect()
@@ -243,15 +245,19 @@ class World():
 					img_rect.y = row_count * tile_size
 					tile = (img, img_rect)
 					self.tile_list.append(tile)
+				# enemy
 				if tile == 3:
 					blob = Enemy(col_count * tile_size, row_count * tile_size + 15)
 					blob_group.add(blob)
+				# lava
 				if tile == 6:
 					lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
 					lava_group.add(lava)
+				# coin
 				if tile == 7:
 					coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
 					coin_group.add(coin)
+				# goal
 				if tile == 8:
 					exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
 					exit_group.add(exit)
@@ -323,7 +329,7 @@ class Exit(pygame.sprite.Sprite):
 		self.rect.y = y
 
 
-#1 = dirt block, 2 = grass block, 3 = enemy, 6 = lava, 7 = cloud, 8 = goal
+#dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
 world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
 [1, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
@@ -339,7 +345,7 @@ world_data = [
 [1, 1, 2, 2, 0, 0, 3, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 1], 
 [1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 7, 0, 1], 
 [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1], 
-[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 1], 
+[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 2, 2, 2, 2, 2, 1, 1], 
 [1, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], 
