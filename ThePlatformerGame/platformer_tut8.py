@@ -347,7 +347,7 @@ world_data = [
 [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 2, 2, 1, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 2, 2, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 8, 2, 2, 2, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 0, 7, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 2, 2, 6, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -375,6 +375,8 @@ exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
 win_button = Button(screen_width //2 - 50, screen_height// 2, win_img)
 
 start_time = pygame.time.get_ticks()
+gameWon = False
+wonTime = 0												
 
 run = True
 while run:
@@ -383,13 +385,20 @@ while run:
 
 	screen.blit(bg_img, (0, 0))
 	screen.blit(sun_img, (100, 100))
-	
 	world.draw()
+	
 	if game_over == 0:
-		current_time = pygame.time.get_ticks() - start_time
-		seconds = current_time // 1000
-		milliseconds = current_time % 1000
-		timer_text = f"Time: {seconds}.{milliseconds:03d}"
+		
+		if gameWon >= 1:
+			current_time = pygame.time.get_ticks() - wonTime 
+			seconds = current_time // 1000
+			milliseconds = current_time % 1000	
+			timer_text = f"Time: {seconds}.{milliseconds:03d}"
+		else:
+			current_time = pygame.time.get_ticks() - start_time
+			seconds = current_time // 1000
+			milliseconds = current_time % 1000	
+			timer_text = f"Time: {seconds}.{milliseconds:03d}"
 
 
 		draw_text(' X ' + str(score), font_score, black, (tile_size-5)*scale, 8*scale)
@@ -406,7 +415,6 @@ while run:
 		lava_group.draw(screen)
 		coin_group.draw(screen)
 		exit_group.draw(screen)
-
 		game_over = player.update(game_over)
 
 		#if player has died
@@ -418,11 +426,14 @@ while run:
 				
 		#if player reaches exit
 		if game_over == 1:
-			if win_button.draw():
-				run = False
-
-
-
+			player.reset(100, screen_height - 130)
+			game_over = 0
+			score = 0
+			wonTime = current_time
+			current_time = pygame.time.get_ticks() - wonTime
+			gameWon += 1
+			world = reset_level()
+			
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			run = False
