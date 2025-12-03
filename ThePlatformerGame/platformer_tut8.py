@@ -39,6 +39,19 @@ win_img = pygame.image.load('img/youwin.png')
 def draw_text(text, font, text_col, x, y):
 	img = font.render(text, True, text_col)
 	screen.blit(img, (x, y))
+	
+def reset_level():
+	player.reset(100, screen_height - 130)
+	blob_group.empty()
+	coin_group.empty()
+	lava_group.empty()
+	exit_group.empty()
+
+	world = World(world_data)
+	#create dummy coin for showing the score
+	score_coin = Coin(tile_size // 2, tile_size // 2)
+	coin_group.add(score_coin)
+	return world
 
 
 class Button():
@@ -386,7 +399,7 @@ while run:
 				player.reset(100, screen_height - 130)
 				game_over = 0
 				score = 0
-				world.draw()
+				world = reset_level()
 				
 		#if player reaches exit
 		if game_over == 1:
