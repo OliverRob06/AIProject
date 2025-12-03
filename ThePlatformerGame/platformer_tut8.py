@@ -390,16 +390,12 @@ while run:
 	if game_over == 0:
 		
 		if gameWon >= 1:
-			current_time = pygame.time.get_ticks() - wonTime 
-			seconds = current_time // 1000
-			milliseconds = current_time % 1000	
-			timer_text = f"Time: {seconds}.{milliseconds:03d}"
-		else:
-			current_time = pygame.time.get_ticks() - start_time
-			seconds = current_time // 1000
-			milliseconds = current_time % 1000	
-			timer_text = f"Time: {seconds}.{milliseconds:03d}"
+			current_time = wonTime
 
+		current_time = pygame.time.get_ticks() - start_time
+		seconds = current_time // 1000
+		milliseconds = current_time % 1000
+		timer_text = f"Time: {seconds}.{milliseconds:03d}"
 
 		draw_text(' X ' + str(score), font_score, black, (tile_size-5)*scale, 8*scale)
 		draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
@@ -429,8 +425,7 @@ while run:
 			player.reset(100, screen_height - 130)
 			game_over = 0
 			score = 0
-			wonTime = current_time
-			current_time = pygame.time.get_ticks() - wonTime
+			start_time = pygame.time.get_ticks()
 			gameWon += 1
 			world = reset_level()
 			
