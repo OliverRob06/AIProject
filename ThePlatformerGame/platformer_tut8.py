@@ -308,7 +308,7 @@ class Exit(pygame.sprite.Sprite):
 
 
 #1 = dirt block, 2 = grass block, 3 = enemy, 6 = lava, 7 = cloud, 8 = goal
-orld_data = [
+world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
 [1, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 8, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1], 
