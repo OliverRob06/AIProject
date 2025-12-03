@@ -6,7 +6,7 @@ pygame.init()
 scale = 1
 slowerEnemy = False
 clock = pygame.time.Clock()
-fps = 1000
+fps = 60
 
 screen_width = 1000*scale
 screen_height = 1000*scale
@@ -336,8 +336,8 @@ world_data = [
 [1, 8, 0, 0, 0, 2, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1], 
 [1, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 1, 1], 
-[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 2, 2, 2, 2, 1, 1], 
-[1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 6, 6, 1, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 2, 1, 1], 
+[1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 6, 6, 2, 2, 1, 1, 1, 1], 
 [1, 0, 0, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
@@ -346,10 +346,10 @@ world_data = [
 [1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 7, 0, 1], 
 [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
-[1, 1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 2, 2, 2, 2, 2, 1, 1], 
-[1, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1], 
-[1, 0, 0, 0, 0, 2, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], 
-[1, 0, 0, 0, 2, 1, 6, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
+[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 2, 2, 1, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 2, 2, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 7, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 2, 2, 6, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
@@ -363,6 +363,7 @@ coin_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 
 #create dummy coin for showing the score
+start_ticks = pygame.time.get_ticks()
 score_coin = Coin(tile_size // 2, tile_size // 2)
 coin_group.add(score_coin)
 world = World(world_data)
@@ -373,7 +374,7 @@ start_button = Button(screen_width // 2 - 350, screen_height // 2, start_img)
 exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
 win_button = Button(screen_width //2 - 50, screen_height// 2, win_img)
 
-
+start_time = pygame.time.get_ticks()
 
 run = True
 while run:
@@ -385,7 +386,15 @@ while run:
 	
 	world.draw()
 	if game_over == 0:
-		draw_text(' X ' + str(score), font_score, black, tile_size - 5, 4)
+		current_time = pygame.time.get_ticks() - start_time
+		seconds = current_time // 1000
+		milliseconds = current_time % 1000
+		timer_text = f"Time: {seconds}.{milliseconds:03d}"
+
+
+		draw_text(' X ' + str(score), font_score, black, (tile_size-5)*scale, 8*scale)
+		draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
+
 		blob_group.update()
 		#update score
 		#check if a coin has been collected
