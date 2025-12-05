@@ -63,6 +63,45 @@ def reset_level():
 	coin_group.add(score_coin)
 	return world
 
+def d14Vecotr():
+	playerX = player.rect.x
+	playerY = player.rect.y
+
+	key = pygame.key.get_pressed()
+	left = key[pygame.K_LEFT]
+	right = key[pygame.K_RIGHT]
+	space = key[pygame.K_SPACE]
+	
+	if not left and not right and not space:
+		nothing = True
+	else:
+		nothing = False
+
+	playerInAir = player.in_air 
+
+	playerVelY = player.rect.y - (player.rect.y - player.vel_y)
+
+	# see terrain infront of player
+	# later
+
+
+	
+
+	
+
+
+	print("Player X: ", playerX)
+	print("Player Y: ", playerY)
+	print("key LEFT: ", left)
+	print("key RIGHT: ", right)
+	print("key SPACE: ", space)
+	print("No Input: ", nothing)
+	print("Player In Air: ", playerInAir)
+	print("Player Vel Y: ", playerVelY)
+
+
+	
+
 
 class Button():
 	def __init__(self, x, y, image):
@@ -144,7 +183,7 @@ class Player():
 
 			#add gravity
 			self.vel_y += 1
-			if self.vel_y > 10:
+			if self.vel_y > 10 :
 				self.vel_y = 10
 			dy += self.vel_y
 
@@ -358,7 +397,7 @@ world_data = [
 [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 2, 2, 1, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 8, 2, 2, 2, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 2, 2, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 0, 7, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 2, 2, 6, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -387,7 +426,8 @@ win_button = Button(screen_width //2 - 50, screen_height// 2, win_img)
 
 start_time = pygame.time.get_ticks()
 gameWon = False
-wonTime = 0												
+wonTime = 0	
+frame = 0											
 
 run = True
 while run:
@@ -444,6 +484,10 @@ while run:
 		if event.type == pygame.QUIT:
 			run = False
 
+	if frame % 10 == 0:
+		d14Vecotr()
+
+	frame += 1
 	pygame.display.update()
 
 pygame.quit()
