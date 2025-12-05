@@ -1,6 +1,16 @@
 import pygame # pyright: ignore[reportMissingImports]
 from pygame.locals import * # pyright: ignore[reportMissingImports]
 
+
+#						The Game Space
+
+
+
+
+
+
+
+
 pygame.init()
 
 scale = 1
@@ -214,6 +224,7 @@ class Player():
 		self.jumped = False
 		self.direction = 0
 		self.in_air = True
+
 
 
 
