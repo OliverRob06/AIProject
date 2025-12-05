@@ -63,7 +63,7 @@ def reset_level():
 	coin_group.add(score_coin)
 	return world
 
-def d14Vecotr():
+def d14Vector():
 	playerX = player.rect.x
 	playerY = player.rect.y
 
@@ -84,8 +84,12 @@ def d14Vecotr():
 	# see terrain infront of player
 	# later
 
+	# enemies coords
+	# later
 
+	timeSpent = pygame.time.get_ticks() - start_time
 	
+
 
 	
 
@@ -98,6 +102,8 @@ def d14Vecotr():
 	print("No Input: ", nothing)
 	print("Player In Air: ", playerInAir)
 	print("Player Vel Y: ", playerVelY)
+	#Terrain
+	print("Time Spent (ms): ", timeSpent)
 
 
 ## Reset, Step and getState all are in a class with player, world, enemies as elements
@@ -573,7 +579,7 @@ while run:
 			run = False
 
 	if frame % 10 == 0:
-		d14Vecotr()
+		d14Vector()
 
 	frame += 1
 	pygame.display.update()
