@@ -84,8 +84,12 @@ def d14Vector():
 	# see terrain infront of player
 	# later
 
+	# enemies coords
+	# later
 
+	timeSpent = pygame.time.get_ticks() - start_time
 	
+
 
 	
 
@@ -98,6 +102,8 @@ def d14Vector():
 	print("No Input: ", nothing)
 	print("Player In Air: ", playerInAir)
 	print("Player Vel Y: ", playerVelY)
+	#Terrain
+	print("Time Spent (ms): ", timeSpent)
 
 
 	
