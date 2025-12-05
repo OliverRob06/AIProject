@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as nnf
 
-class PolicyNetwork(nn.Module):
+class Network(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -23,5 +23,5 @@ class PolicyNetwork(nn.Module):
         x = nnf.relu(x) # Introduces non-linearity. Forces -ve values to be exactly 0.
         x = self.layer2(x) # Move the data from the hidden layer (128) to the output layer (6).
         x = nnf.softmax(x, dim = -1) # Turns the output layer (6) into (6) probabilities all adding up to 1
-        return x # returns 6 probabilities. Highest used as action to take
+        return x # returns 6 probabilities.
 
