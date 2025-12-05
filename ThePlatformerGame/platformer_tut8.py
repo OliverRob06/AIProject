@@ -1,5 +1,5 @@
-import pygame
-from pygame.locals import *
+import pygame # pyright: ignore[reportMissingImports]
+from pygame.locals import * # pyright: ignore[reportMissingImports]
 
 pygame.init()
 
