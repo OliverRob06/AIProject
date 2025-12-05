@@ -63,7 +63,7 @@ def reset_level():
 	coin_group.add(score_coin)
 	return world
 
-def d14Vecotr():
+def d14Vector():
 	playerX = player.rect.x
 	playerY = player.rect.y
 
