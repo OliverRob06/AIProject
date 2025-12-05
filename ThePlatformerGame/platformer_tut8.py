@@ -200,7 +200,7 @@ class Button():
 
 class Player():
 	def __init__(self, x, y):
-		self.reset(x, y)
+		self.reset()
 
 
 	# action corresponds to either 10 for player input, or 0-5 for ai input
