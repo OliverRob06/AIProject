@@ -485,7 +485,7 @@ while run:
 			run = False
 
 	if frame % 10 == 0:
-		d14Vecotr()
+		d14Vector()
 
 	frame += 1
 	pygame.display.update()
