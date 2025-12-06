@@ -84,16 +84,12 @@ def d14Vector():
 	# see terrain infront of player
 	# later
 
-	# enemies coords
-	# later
+	closestEnemyDistance = getClosestEnemyDistance(playerX, playerY)
 
 	timeSpent = pygame.time.get_ticks() - start_time
-	
 
 
-	
-
-
+	#print(chr(27) + "[2J")
 	print("Player X: ", playerX)
 	print("Player Y: ", playerY)
 	print("key LEFT: ", left)
@@ -103,10 +99,27 @@ def d14Vector():
 	print("Player In Air: ", playerInAir)
 	print("Player Vel Y: ", playerVelY)
 	#Terrain
+	for enemy in blob_group:
+		enemyX = enemy.rect.x
+		enemyY = enemy.rect.y
+	print("Enemy X: ", enemyX)
+	print("Enemy Y: ", enemyY)
+
+	print("Closest Enemy Distance: ", closestEnemyDistance)
 	print("Time Spent (ms): ", timeSpent)
 
 
-	
+def getClosestEnemyDistance(playerX, playerY):
+	minDistance = float('inf')
+	for enemy in blob_group:
+		enemyX = enemy.rect.x
+		enemyY = enemy.rect.y
+		#Slime height = 52, player height = 80
+		distance = ((enemyX - playerX) ** 2 + ((enemyY+52) - (playerY+80)) ** 2) ** 0.5
+		if distance < minDistance:
+			minDistance = distance
+
+	return minDistance
 
 
 class Button():
@@ -189,8 +202,8 @@ class Player():
 
 			#add gravity
 			self.vel_y += 1
-			if self.vel_y > 10 :
-				self.vel_y = 10
+			if self.vel_y > 1000 :
+				self.vel_y = 1000
 			dy += self.vel_y
 
 			#check for collision
@@ -334,7 +347,7 @@ class Enemy(pygame.sprite.Sprite):
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/blob.png')
-		self.image = pygame.transform.scale(img, (tile_size, tile_size))
+		self.image = pygame.transform.scale(img, (tile_size-1, tile_size))
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 
