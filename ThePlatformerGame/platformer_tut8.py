@@ -51,7 +51,7 @@ def draw_text(text, font, text_col, x, y):
 	screen.blit(img, (x, y))
 	
 def reset_level():
-	player.reset(100, screen_height - 130)
+	player.reset()
 	blob_group.empty()
 	coin_group.empty()
 	lava_group.empty()
@@ -109,6 +109,7 @@ def d14Vector():
 	print("Time Spent (ms): ", timeSpent)
 
 
+	
 def getClosestEnemyDistance(playerX, playerY):
 	minDistance = float('inf')
 	for enemy in blob_group:
@@ -120,6 +121,67 @@ def getClosestEnemyDistance(playerX, playerY):
 			minDistance = distance
 
 	return minDistance
+
+## Reset, Step and getState all are in a class with player, world, enemies as elements
+# Used for the AI resetting
+def reset(self):
+	player.reset()
+	game_over = 0
+	score = 0
+	world = reset_level()
+	
+	# Return the initial state of the game and an empty info dict
+	return self.get_state(), {}
+
+# Steal d14Vecotr code when done
+def step(self, action):
+	# Handle Pygame events (keep window from freezing)
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			pygame.quit()
+
+	# Translate the given number corresponding to an action, and subsequent movement.
+	player.update(self.game_over, action)
+	
+	# Calculate reward
+	reward = 0
+
+	# Incentivises taking less time
+	reward -= -0.2
+	
+	# If player has died
+	if self.game_over == -1:
+			reward-=100
+			
+	# If player reaches wins
+	if game_over == 1:
+		reward+=100
+			
+	# If player reaches coin (checkpoint)
+	if pygame.sprite.spritecollide(player, coin_group, True):
+		reward =+ 5 
+		
+	
+	# Check game is over (Win or Lose)
+	terminated = False
+	if (self.game_over == -1 or self.game_over == 1):
+		terminated = True
+
+	# Draws Game. can remove to improve performance
+	self.screen.fill((0,0,0))
+	self.player.draw(self.screen)
+	pygame.display.flip()
+
+	# Return new observation given new state, reward calculated and game over
+	return self.get_state(), reward, terminated, {}
+
+# Inside MarioGameEnv
+def get_state(self):
+    # ... logic to calculate distances ...
+    
+    # Returns a NumPy Array: [0.1, 0.5, -0.2, ...]
+    # Shape: (14,)
+    return np.array(state_vector, dtype=np.float32)
 
 
 class Button():
@@ -154,39 +216,68 @@ class Button():
 
 class Player():
 	def __init__(self, x, y):
-		self.reset(x, y)
+		self.reset()
 
 
-
-	def update(self, game_over):
+	# action corresponds to either 10 for player input, or 0-5 for ai input
+	def update(self, game_over, action):
 		dx = 0
 		dy = 0
 		walk_cooldown = 5
-
+		"""
+		There are six discrete actions available: 
+		0: go left
+		1: go left and up
+		2: go right
+		3: go right and up
+		4. go up
+		5: do nothing
+		"""
 		if game_over == 0:
-			#get keypresses
-			key = pygame.key.get_pressed()
-			if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
-				self.vel_y = -15
-				self.jumped = True
-			if key[pygame.K_SPACE] == False:
-				self.jumped = False
-			if key[pygame.K_LEFT]:
-				dx -= 5*scale
-				self.counter += 1
-				self.direction = -1
-			if key[pygame.K_RIGHT]:
-				dx += 5*scale
-				self.counter += 1
-				self.direction = 1
-			if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
-				self.counter = 0
-				self.index = 0
-				if self.direction == 1:
-					self.image = self.images_right[self.index]
-				if self.direction == -1:
-					self.image = self.images_left[self.index]
-
+			if (action<7) :
+				if (action==4 or action==3 or action==4) and self.jumped == False and self.in_air == False:
+					self.vel_y = -15
+					self.jumped = True
+				if (action==4 or action==3 or action==4) == False:
+					self.jumped = False
+				if (action==0 or action==1):
+					dx -= 5*scale
+					self.counter += 1
+					self.direction = -1
+				if (action==2 or action==3):
+					dx += 5*scale
+					self.counter += 1
+					self.direction = 1
+				if (action==0 or action==1) == False and (action==2 or action==3) == False:
+					self.counter = 0
+					self.index = 0
+					if self.direction == 1:
+						self.image = self.images_right[self.index]
+					if self.direction == -1:
+						self.image = self.images_left[self.index]
+			else:
+				
+				key = pygame.key.get_pressed()
+				if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
+					self.vel_y = -15
+					self.jumped = True
+				if key[pygame.K_SPACE] == False:
+					self.jumped = False
+				if key[pygame.K_LEFT]:
+					dx -= 5*scale
+					self.counter += 1
+					self.direction = -1
+				if key[pygame.K_RIGHT]:
+					dx += 5*scale
+					self.counter += 1
+					self.direction = 1
+				if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
+					self.counter = 0
+					self.index = 0
+					if self.direction == 1:
+						self.image = self.images_right[self.index]
+					if self.direction == -1:
+						self.image = self.images_left[self.index]
 
 			#handle animation
 			if self.counter > walk_cooldown:
@@ -260,7 +351,7 @@ class Player():
 		return game_over
 
 
-	def reset(self, x, y):
+	def reset(self):
 		self.images_right = []
 		self.images_left = []
 		self.index = 0
@@ -274,8 +365,8 @@ class Player():
 		self.dead_image = pygame.image.load('img/ghost.png')
 		self.image = self.images_right[self.index]
 		self.rect = self.image.get_rect()
-		self.rect.x = x
-		self.rect.y = y
+		self.rect.x = 100
+		self.rect.y = screen_height - 130
 		self.width = self.image.get_width()
 		self.height = self.image.get_height()
 		self.vel_y = 0
@@ -481,18 +572,18 @@ while run:
 		lava_group.draw(screen)
 		coin_group.draw(screen)
 		exit_group.draw(screen)
-		game_over = player.update(game_over)
+		game_over = player.update(game_over, 10)
 
 		#if player has died
 		if game_over == -1:
-				player.reset(100, screen_height - 130)
+				player.reset()
 				game_over = 0
 				score = 0
 				world = reset_level()
 				
 		#if player reaches exit
 		if game_over == 1:
-			player.reset(100, screen_height - 130)
+			player.reset()
 			game_over = 0
 			score = 0
 			start_time = pygame.time.get_ticks()
