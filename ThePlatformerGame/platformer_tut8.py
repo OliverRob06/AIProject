@@ -150,11 +150,22 @@ class platformerEnv:
 		for enemy in self.world.blob_group:
 			enemyX = enemy.rect.x
 			enemyY = enemy.rect.y
+
+		playX = self.player.rect.x
+		playY = self.player.rect.y
+		for exit in self.world.exit_group:
+			exitX = exit.rect.x
+			exitY = exit.rect.y
 		print("Enemy X: ", enemyX)
 		print("Enemy Y: ", enemyY)
 
 		print("Closest Enemy Distance: ", closestEnemyDistance)
 		print("Closest Goal/Coin Distance: ", closestGoalOrCoin)
+
+		print("Goal x: ", exitX)
+		print("Goal y: ", exitY)
+		print("Player x: ", playX)
+		print("Player y: ", playY)
 		print("Time Spent (ms): ", timeSpent)
 
 	def getClosestEnemyDistance(self, playerX, playerY):
@@ -174,13 +185,13 @@ class platformerEnv:
 		for coin in self.world.coin_group:
 			coinX = coin.rect.x
 			coinY = coin.rect.y
-			distance = ((coinX - playerX +45 - 80) ** 2 + ((coinY+52) - (playerY+80)) ** 2) ** 0.5
+			distance = ((coinX - playerX - 40) ** 2 + ((coinY+52) - (playerY+80)) ** 2) ** 0.5
 			if distance < minDistance:
 				minDistance = distance
 		for goal in self.world.exit_group:
 			goalX = goal.rect.x
 			goalY = goal.rect.y
-			distance = ((goalX - playerX +45 - 80) ** 2 + ((goalY+52) - (playerY+80)) ** 2) ** 0.5
+			distance = ((goalX + 35 - playerX) ** 2 + ((goalY+ - playerY)) ** 2) ** 0.5
 			if distance < minDistance:
 				minDistance = distance
 
@@ -255,10 +266,7 @@ class platformerEnv:
 		# Adds player vertical velocity 
 		state_vector.append(self.player.rect.y - (self.player.rect.y - self.player.vel_y))
 
-		# Adds player distance to nearest coin
-		state_vector.append()
-
-
+		
 		# Add terrain infront of players relative height to player
 		# state_vector.append(self.player.getNearestSurface())
 
