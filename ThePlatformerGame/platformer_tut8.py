@@ -524,7 +524,7 @@ class Enemy(pygame.sprite.Sprite):
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/blob.png')
-		self.image = pygame.transform.scale(img, (tile_size, tile_size))
+		self.image = pygame.transform.scale(img, (tile_size-1, tile_size))
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 
