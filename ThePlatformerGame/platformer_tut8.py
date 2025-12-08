@@ -3,7 +3,7 @@ import numpy as np
 from pygame.locals import *
 import math
 pygame.init()		
-        
+
 #						The Environment Global Variables
 scale = 1
 slowerEnemy = False
@@ -48,9 +48,9 @@ world_data = [
 [1, 0, 0, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 1, 0, 7, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 7, 0, 0, 0, 0, 1], 
+[1, 1, 0, 7, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 1], 
 [1, 1, 2, 2, 0, 0, 3, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 1], 
-[1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 7, 0, 1], 
+[1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 7, 1], 
 [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 2, 2, 1, 1], 
@@ -73,6 +73,9 @@ class platformerEnv:
 		self.world = World(world_data)
 		self.world.coin_group.add(self.score_coin)
 
+		self.world_data = world_data
+		self.tile_size = tile_size
+
 		self.start_time = pygame.time.get_ticks()
 		self.gameWon = False
 		self.wonTime = 0	
@@ -93,6 +96,8 @@ class platformerEnv:
 		self.world.exit_group.empty()
 
 		world = World(world_data)
+		self.world_data = world_data
+		self.tile_size = tile_size
 		#create dummy coin for showing the score
 		score_coin = Coin(tile_size // 2, tile_size // 2)
 		world.coin_group.add(score_coin)
@@ -148,11 +153,19 @@ class platformerEnv:
 		# Terrain
 		Height = self.player.getTerrainInFront()
 
+		# get the pixel looking at
+		if self.player.direction == -1:  #facing left
+			pixelsToCheckx = self.player.rect.x-1 #block on left
+			pixelsToCheckY = self.player.rect.y+79
+		else:
+			pixelsToCheckx = self.player.rect.x+50#block on right
+			pixelsToCheckY = self.player.rect.y+79
+		print("Pixels to check X: ", pixelsToCheckx)
+		print("Pixels to check Y: ", pixelsToCheckY)
 
-		
+		print(Height)
 
-
-		print("Player X: ", playerX)
+		"""print("Player X: ", playerX)
 		print("Player Y: ", playerY)
 
 		print("key LEFT: ", left)
@@ -176,7 +189,7 @@ class platformerEnv:
 		print("Player x: ", playX)
 		print("Player y: ", playY)
 
-		print("Time Spent (ms): ", timeSpent)
+		print("Time Spent (ms): ", timeSpent)"""
 
 	# Get distance to closest enemy
 	def getClosestEnemyDistance(self, playerX, playerY):
@@ -315,7 +328,7 @@ class Player():
 		"""
 		if game_over == 0:
 			# Use AI actions for inputs
-			if (action<10) :
+			if (action<10):
 				# AI jumping with varients (up left, up right and staight up)
 				if (action==1 or action==3 or action==4) and self.jumped == False and self.in_air == False:
 					self.vel_y = -15
@@ -449,13 +462,6 @@ class Player():
 
 		
 	def getTerrainInFront(self):
-
-		#Terrain States 
-		# GAP = 0
-		# BLOCK = 1
-		# OBSTACLE = 2
-		# Objective = 3
-		# #screen size = 1000px^2
 		#tile size = 50px^2
 		#dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
 		#player coords
@@ -464,6 +470,9 @@ class Player():
 
 
 		#find block below
+
+		# the reason that the ai jumps too early is because it check the 50 block 50 pixel to right of the origin of the imgs x and y specically to the left
+
 
 		#direction player faces
 		if self.direction == -1:  #facing left
@@ -715,6 +724,36 @@ class Exit(pygame.sprite.Sprite):
 
 run = True
 platformE = platformerEnv()
+
+# Choice menu
+print("=" * 50)
+print("PLATFORMER GAME - MODE SELECTION")
+print("=" * 50)
+print("1. Player Control (Use Arrow Keys & Space)")
+print("2. AI Pathfinding (Watch AI complete level)")
+print("=" * 50)
+
+mode = None
+while mode not in [1, 2]:
+	try:
+		mode = int(input("Select mode (1 or 2): "))
+		if mode not in [1, 2]:
+			print("Invalid choice. Please enter 1 or 2.")
+	except ValueError:
+		print("Please enter a valid number (1 or 2).")
+
+if mode == 1:
+	use_ai = False
+	print("\nStarting in PLAYER CONTROL mode...")
+else:
+	use_ai = True
+	print("\nStarting in AI PATHFINDING mode...")
+	print("Watch as the AI finds and follows the optimal path to the goal!")
+
+# Initialize AI variables
+ai_path = []
+ai_path_update_counter = 0
+
 while run:
 
 	
@@ -748,7 +787,18 @@ while run:
 		platformE.world.lava_group.draw(screen)
 		platformE.world.coin_group.draw(screen)
 		platformE.world.exit_group.draw(screen)
-		platformE.game_over = platformE.player.update(10,platformE.world,platformE.game_over)
+		
+		# Use AI or player control based on selected mode
+		if use_ai:
+    		# Get next AI action from ai.py
+			from ai_pathfinding import terrain_ai
+			action = terrain_ai(platformE)
+			
+		else:
+			action = 10  # Use 10 to indicate player control
+		
+		print("AI Action:", action)
+		platformE.game_over = platformE.player.update(action, platformE.world, platformE.game_over)
 		#platformE.player.getTerrainInFront()
 
 		#if player has died
@@ -772,8 +822,7 @@ while run:
 		if event.type == pygame.QUIT:
 			run = False
 	
-	if platformE.frame % 20 == 0:
-		platformE.d14Vector()
+	platformE.d14Vector()
 
 	platformE.frame += 1
 	pygame.display.update()
