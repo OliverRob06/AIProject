@@ -5,6 +5,7 @@ import torch.nn.functional as nnf
 import torch.distributions as dist
 
 import numpy as np
+import platformer_tut8 as plat
 
 import networkModel as nm
 
@@ -51,17 +52,6 @@ def forward_pass(env, policy, discount_factor):
 
         observation, reward, terminated, info = env.step(action.item())
         done = terminated
-
-        if prev_observation[6] and prev_observation[7] and action == 0:
-            reward += 0.5 # increase reward for doing nothing after both leg touched ground
-        if (prev_observation[6] or prev_observation[7]): # once at least one leg touch ground
-            if action == 0:
-                reward += 0.2 # increase reward for doing nothing 
-            elif action == 2:
-                reward -= 0.1 # decrease it for firing main engine
-            else:
-                reward -= 0.05 # decrease it slighlty for firing side engine
-        prev_observation = observation
 
         log_prob_actions.append(log_prob_action)
         rewards.append(reward)
@@ -139,7 +129,7 @@ def main():
     episode_returns = []
 
     
-    env = MarioGameEnv() 
+    env = plat.platformerEnv() 
 
     policy = nm.Network() 
 
