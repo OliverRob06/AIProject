@@ -146,7 +146,7 @@ class platformerEnv:
 		timeSpent = pygame.time.get_ticks() - self.start_time
 		
 		# Terrain
-		Height = self.player.getTerrainInFront()
+		Height = self.player.getHeight()
 
 
 		
@@ -281,7 +281,7 @@ class platformerEnv:
 		state_vector.append(self.player.rect.y - (self.player.rect.y - self.player.vel_y))
 
 		# Add terrain infront of players relative height to player
-		state_vector.append(Player.getTerrianInFront())		
+		state_vector.append(Player.getHeight())		
 		
 		# Add distance to nearest enemy
 		state_vector.append(self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y))
@@ -448,7 +448,7 @@ class Player():
 		return game_over
 
 		
-	def getTerrainInFront(self):
+	def getHeight(self):
 
 		#Terrain States 
 		# GAP = 0
@@ -749,7 +749,6 @@ while run:
 		platformE.world.coin_group.draw(screen)
 		platformE.world.exit_group.draw(screen)
 		platformE.game_over = platformE.player.update(10,platformE.world,platformE.game_over)
-		#platformE.player.getTerrainInFront()
 
 		#if player has died
 		if platformE.game_over == -1:
