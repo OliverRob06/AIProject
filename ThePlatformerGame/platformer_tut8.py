@@ -1,11 +1,12 @@
 import pygame # pyright: ignore[reportMissingImports]
 import numpy as np # pyright: ignore[reportMissingImports]
 from pygame.locals import * # pyright: ignore[reportMissingImports]
+import math
 pygame.init()		
         
 
 #						The Environment Global Variables
-scale = 0.7
+scale = 1
 slowerEnemy = False
 clock = pygame.time.Clock()
 fps = 60
@@ -150,6 +151,8 @@ class platformerEnv:
 		# time spent
 		timeSpent = pygame.time.get_ticks() - self.start_time
 		
+		# terrian
+		Height = self.player.getTerrianInFront()
 
 
 		
@@ -163,7 +166,7 @@ class platformerEnv:
 		print("No Input: ", nothing)
 		print("Player In Air: ", playerInAir)
 		print("Player Vel Y: ", playerVelY)
-		#Terrain
+		print("Height: ", Height)
 
 		print("Enemy X: ", enemyX)
 		print("Enemy Y: ", enemyY)
@@ -285,6 +288,8 @@ class platformerEnv:
 
 		# Add distance to nearest coin or goal
 		state_vector.append(self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y))
+
+		state_vector.append(Player.getTerrianInFront())
 
 
 		# Returns Set turned into NumPy Float Tensor 
@@ -455,6 +460,106 @@ class Player():
 			pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 		
 		return game_over
+		
+		
+		
+		
+		
+		
+	def getTerrianInFront(self):
+
+		#Terrian States 
+		# GAP = 0
+		# BLOCK = 1
+		# OBSTACLE = 2
+		# Objective = 3
+		# #screen size = 1000px^2
+		#tile size = 50px^2
+		#dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
+		#player coords
+		xPos = self.rect.x #100 by default
+		yPos = self.rect.y #870 by default
+
+
+		#find block below
+
+		#direction player faces
+		if self.direction == -1:  #facing left
+			pixelsToCheckx = xPos-50 #block on left
+			pixelsToCheckY = yPos+79
+			Height = self.checkTerrian(pixelsToCheckx, pixelsToCheckY,world_data)
+		else:
+			pixelsToCheckx = xPos+50#block on right
+			pixelsToCheckY = yPos+79
+			Height = self.checkTerrian(pixelsToCheckx, pixelsToCheckY,world_data)
+		
+		return Height
+		
+
+	#return relative height
+	#1 big wall
+	#0.5 2 block
+	#0 1 block
+	#-0.5 1 block gap
+	#-1 2 block gap
+	#-1.5 3 block gap
+
+	def checkTerrian(self, pixelsToCheckx, pixelsToCheckY,world_data):
+		height = 0
+		yCord = math.floor(pixelsToCheckx/tile_size)
+		xCord = math.floor(pixelsToCheckY/tile_size)
+		if yCord >=20 or xCord >=20: #crashes if outside of 2D array world data
+			 #error messsage
+			return
+		tileData = world_data[xCord][yCord] #the tile in front of us
+		Terrian = self.getTerrian(tileData) #get Terrian Type
+
+
+		#CHECKS BELOW US
+
+		if Terrian == 0 or Terrian == 2 or Terrian == 3: #if a air, enemy or objective   
+			for i in range (1,4):
+				yCord += 1 #add 1 to height to check tile above
+				height = (-i) #set height to the -index of the loop
+				if yCord >=20 or xCord >20: #check if inside 2D world boundaries
+					return
+				tileData = world_data[xCord][yCord] #get tile data
+
+				TerrianBelow = self.getTerrian(tileData) #get terrian again
+				if TerrianBelow == 1:
+					break
+
+		#CHECKS ABOVE US
+
+		elif Terrian == 1:
+			for i in range (1,4):
+				yCord -= 1
+				height = i
+				if yCord >=20 or xCord >20:
+					return
+				tileData = world_data[xCord][yCord]
+				TerrianAbove = self.getTerrian(tileData)
+				if TerrianAbove == 0:
+					break
+
+		return height
+							
+	def getTerrian(self, tileData):					
+		if tileData == 0:
+			Terrian = 0 #there is a gap needs jumped
+		elif tileData == 1 or tileData == 2:
+			Terrian = 1 #there is a block, walk forwards
+		elif tileData == 3 or tileData == 6:
+			Terrian = 2 #there is obstacle
+		else:
+			Terrian = 3 #there is objective
+
+		return Terrian
+
+
+
+
+
 
 	def reset(self):
 		self.images_right = []
@@ -629,6 +734,7 @@ while run:
 		platformE.world.coin_group.draw(screen)
 		platformE.world.exit_group.draw(screen)
 		platformE.game_over = platformE.player.update(10,platformE.world,platformE.game_over)
+		#platformE.player.getTerrianInFront()
 
 		#if player has died
 		if platformE.game_over == -1:
