@@ -546,11 +546,11 @@ class Enemy(pygame.sprite.Sprite):
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/blob.png')
-		self.image = pygame.transform.scale(img, (tile_size-1, tile_size))
+		self.image = pygame.transform.scale(img, (tile_size-1, tile_size-tile_size*0.3))
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 
-		self.rect.y = y-(tile_size/3)
+		self.rect.y = y-((tile_size/3)-tile_size*0.3)
 		
 		# randomly choose left or right direction at beginning
 		if pygame.time.get_ticks() % 2 == 0:
