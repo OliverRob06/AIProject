@@ -151,7 +151,7 @@ class platformerEnv:
 		timeSpent = pygame.time.get_ticks() - self.start_time
 		
 		# Terrain
-		Height = self.player.getTerrainInFront()
+		Height = self.player.getHeight()
 
 		# get the pixel looking at
 		if self.player.direction == -1:  #facing left
@@ -294,7 +294,7 @@ class platformerEnv:
 		state_vector.append(self.player.rect.y - (self.player.rect.y - self.player.vel_y))
 
 		# Add terrain infront of players relative height to player
-		state_vector.append(Player.getTerrianInFront())		
+		state_vector.append(Player.getHeight())		
 		
 		# Add distance to nearest enemy
 		state_vector.append(self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y))
@@ -461,7 +461,14 @@ class Player():
 		return game_over
 
 		
-	def getTerrainInFront(self):
+	def getHeight(self):
+
+		#Terrain States 
+		# GAP = 0
+		# BLOCK = 1
+		# OBSTACLE = 2
+		# Objective = 3
+		# #screen size = 1000px^2
 		#tile size = 50px^2
 		#dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
 		#player coords
@@ -787,18 +794,7 @@ while run:
 		platformE.world.lava_group.draw(screen)
 		platformE.world.coin_group.draw(screen)
 		platformE.world.exit_group.draw(screen)
-		
-		# Use AI or player control based on selected mode
-		if use_ai:
-    		# Get next AI action from ai.py
-			from ai_pathfinding import terrain_ai
-			action = terrain_ai(platformE)
-			
-		else:
-			action = 10  # Use 10 to indicate player control
-		
-		print("AI Action:", action)
-		platformE.game_over = platformE.player.update(action, platformE.world, platformE.game_over)
+		platformE.game_over = platformE.player.update(10,platformE.world,platformE.game_over)
 		#platformE.player.getTerrainInFront()
 
 		#if player has died
