@@ -519,6 +519,9 @@ class Player():
 
 				if self.getTerrain(world_data[yCord][xCord]) == 1: #get Terrain again
 					break
+				elif self.getTerrain(world_data[yCord][xCord]) == 4:
+					height = -3
+					break
 
 		#CHECKS ABOVE US
 
@@ -538,8 +541,10 @@ class Player():
 			Terrain = 0 #there is a gap needs jumped
 		elif tileData == 1 or tileData == 2:
 			Terrain = 1 #there is a block, walk forwards
-		elif tileData == 3 or tileData == 6:
-			Terrain = 2 #there is obstacle
+		elif tileData == 3:
+			Terrain = 2 #there is slime
+		elif tileData == 6:
+			Terrain = 4 # there is lava
 		else:
 			Terrain = 3 #there is objective
 
