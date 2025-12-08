@@ -145,8 +145,8 @@ class platformerEnv:
 		# time spent
 		timeSpent = pygame.time.get_ticks() - self.start_time
 		
-		# terrian
-		Height = self.player.getTerrianInFront()
+		# Terrain
+		Height = self.player.getTerrainInFront()
 
 
 		
@@ -290,7 +290,7 @@ class platformerEnv:
 		# Add distance to nearest coin or goal
 		state_vector.append(self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y))
 
-		state_vector.append(Player.getTerrianInFront())
+		state_vector.append(Player.getTerrainInFront())
 
 
 		# Returns Set turned into NumPy Float Tensor 
@@ -451,9 +451,9 @@ class Player():
 		return game_over
 
 		
-	def getTerrianInFront(self):
+	def getTerrainInFront(self):
 
-		#Terrian States 
+		#Terrain States 
 		# GAP = 0
 		# BLOCK = 1
 		# OBSTACLE = 2
@@ -472,25 +472,27 @@ class Player():
 		if self.direction == -1:  #facing left
 			pixelsToCheckx = xPos-50 #block on left
 			pixelsToCheckY = yPos+79
-			Height = self.checkTerrian(pixelsToCheckx, pixelsToCheckY,world_data)
+			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
 		else:
 			pixelsToCheckx = xPos+50#block on right
 			pixelsToCheckY = yPos+79
-			Height = self.checkTerrian(pixelsToCheckx, pixelsToCheckY,world_data)
+			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
 		
 		return Height
 		
 
 	#return relative height
-	#1 big wall
-	#0.5 2 block
-	#0 1 block
-	#-0.5 1 block gap
-	#-1 2 block gap
-	#-1.5 3 block gap
+	#3 big wall
+	#2 2 block
+	#1 1 block
+	#-1 next block along
+	#-2 1 block gap
+	#-3 2 block gap
+	
 
-	def checkTerrian(self, pixelsToCheckx, pixelsToCheckY,world_data):
+	def checkTerrain(self, pixelsToCheckx, pixelsToCheckY,world_data):
 		height = 0
+		tileCount = 20
 		
 		#convert pixels coordinates -> tile coords
 		xCord = math.floor(pixelsToCheckx/tile_size)
@@ -498,54 +500,50 @@ class Player():
 
 
 
-		#boundary 
-		if yCord >=20 or xCord >=20: 
+		#boundary protection
+		if xCord <0 or yCord<0 or xCord >=tileCount or yCord>=tileCount:
 			return
 		
 
 		tileData = world_data[yCord][xCord] #the tile in front of us
-		Terrian = self.getTerrian(tileData) #get Terrian Type
+		Terrain = self.getTerrain(tileData) #get Terrain Type
 
 
 		#CHECKS BELOW US
 
-		if Terrian == 0 or Terrian == 2 or Terrian == 3: #if a air, enemy or objective   
+		if Terrain == 0 or Terrain == 2 or Terrain == 3: #if a air, enemy or objective   
 			for i in range (1,4):
 				yCord += 1 #add 1 to height to check tile above
 				height = (-i) #set height to the -index of the loop
-				if yCord >=20 or xCord >20: #check if inside 2D world boundaries
-					return
 				tileData = world_data[yCord][xCord] #get tile data
 
-				if self.getTerrian(world_data[yCord][xCord]) == 1: #get terrian again
+				if self.getTerrain(world_data[yCord][xCord]) == 1: #get Terrain again
 					break
 
 		#CHECKS ABOVE US
 
-		elif Terrian == 1:
+		elif Terrain == 1:
 			for i in range (1,4):
 				yCord -= 1
 				height = i
-				if yCord >=20 or xCord >20:
-					return
 				tileData = world_data[yCord][xCord]
-				TerrianAbove = self.getTerrian(tileData)
-				if TerrianAbove == 0 or TerrianAbove == 2 or TerrianAbove == 3:
+				TerrainAbove = self.getTerrain(tileData)
+				if TerrainAbove == 0 or TerrainAbove == 2 or TerrainAbove == 3:
 					break
 
 		return height
 							
-	def getTerrian(self, tileData):					
+	def getTerrain(self, tileData):					
 		if tileData == 0:
-			Terrian = 0 #there is a gap needs jumped
+			Terrain = 0 #there is a gap needs jumped
 		elif tileData == 1 or tileData == 2:
-			Terrian = 1 #there is a block, walk forwards
+			Terrain = 1 #there is a block, walk forwards
 		elif tileData == 3 or tileData == 6:
-			Terrian = 2 #there is obstacle
+			Terrain = 2 #there is obstacle
 		else:
-			Terrian = 3 #there is objective
+			Terrain = 3 #there is objective
 
-		return Terrian
+		return Terrain
 
 
 
@@ -749,7 +747,7 @@ while run:
 		platformE.world.coin_group.draw(screen)
 		platformE.world.exit_group.draw(screen)
 		platformE.game_over = platformE.player.update(10,platformE.world,platformE.game_over)
-		#platformE.player.getTerrianInFront()
+		#platformE.player.getTerrainInFront()
 
 		#if player has died
 		if platformE.game_over == -1:
