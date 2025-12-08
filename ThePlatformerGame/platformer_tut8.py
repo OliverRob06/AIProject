@@ -491,11 +491,18 @@ class Player():
 
 	def checkTerrian(self, pixelsToCheckx, pixelsToCheckY,world_data):
 		height = 0
+		
+		#convert pixels coordinates -> tile coords
 		xCord = math.floor(pixelsToCheckx/tile_size)
 		yCord = math.floor(pixelsToCheckY/tile_size)
-		if yCord >=20 or xCord >=20: #crashes if outside of 2D array world data
-			#error messsage
+
+
+
+		#boundary 
+		if yCord >=20 or xCord >=20: 
 			return
+		
+
 		tileData = world_data[yCord][xCord] #the tile in front of us
 		Terrian = self.getTerrian(tileData) #get Terrian Type
 
@@ -510,8 +517,7 @@ class Player():
 					return
 				tileData = world_data[yCord][xCord] #get tile data
 
-				TerrianBelow = self.getTerrian(tileData) #get terrian again
-				if TerrianBelow == 1:
+				if self.getTerrian(world_data[yCord][xCord]) == 1: #get terrian again
 					break
 
 		#CHECKS ABOVE US
@@ -524,7 +530,7 @@ class Player():
 					return
 				tileData = world_data[yCord][xCord]
 				TerrianAbove = self.getTerrian(tileData)
-				if TerrianAbove == 0:
+				if TerrianAbove == 0 or TerrianAbove == 2 or TerrianAbove == 3:
 					break
 
 		return height
