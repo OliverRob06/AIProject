@@ -1,11 +1,11 @@
 import pygame # pyright: ignore[reportMissingImports]
 import numpy as np # pyright: ignore[reportMissingImports]
 from pygame.locals import * # pyright: ignore[reportMissingImports]
+
 pygame.init()		
         
-
 #						The Environment Global Variables
-scale = 0.7
+scale = 1
 slowerEnemy = False
 clock = pygame.time.Clock()
 fps = 60
@@ -104,32 +104,49 @@ class platformerEnv:
 		return world
 
 	def d14Vector(self):
+		# player position
 		playerX = self.player.rect.x
 		playerY = self.player.rect.y
 
+
+		#player input
 		key = pygame.key.get_pressed()
 		left = key[pygame.K_LEFT]
 		right = key[pygame.K_RIGHT]
 		space = key[pygame.K_SPACE]
 		
+		#nothing pressed
 		if not left and not right and not space:
 			nothing = True
 		else:
 			nothing = False
 
+		# player in air
 		playerInAir = self.player.in_air 
 
+		# player vertical velocity
 		playerVelY = self.player.rect.y - (self.player.rect.y - self.player.vel_y)
 
 		# see terrain infront of player
 		# later
 
-		# enemies coords
-		# later
+		# enemy positions
+		for enemy in self.world.blob_group:
+			enemyX = enemy.rect.x
+			enemyY = enemy.rect.y
 
+		# goal position
+		playX = self.player.rect.x
+		playY = self.player.rect.y
+		for exit in self.world.exit_group:
+			exitX = exit.rect.x
+			exitY = exit.rect.y
+
+		# distances
 		closestEnemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
 		closestGoalOrCoin = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 
+		# time spent
 		timeSpent = pygame.time.get_ticks() - self.start_time
 		
 
@@ -139,22 +156,16 @@ class platformerEnv:
 
 		print("Player X: ", playerX)
 		print("Player Y: ", playerY)
+
 		print("key LEFT: ", left)
 		print("key RIGHT: ", right)
 		print("key SPACE: ", space)
 		print("No Input: ", nothing)
+
 		print("Player In Air: ", playerInAir)
 		print("Player Vel Y: ", playerVelY)
 		#Terrain
-		for enemy in self.world.blob_group:
-			enemyX = enemy.rect.x
-			enemyY = enemy.rect.y
 
-		playX = self.player.rect.x
-		playY = self.player.rect.y
-		for exit in self.world.exit_group:
-			exitX = exit.rect.x
-			exitY = exit.rect.y
 		print("Enemy X: ", enemyX)
 		print("Enemy Y: ", enemyY)
 
@@ -163,8 +174,10 @@ class platformerEnv:
 
 		print("Goal x: ", exitX)
 		print("Goal y: ", exitY)
+		
 		print("Player x: ", playX)
 		print("Player y: ", playY)
+
 		print("Time Spent (ms): ", timeSpent)
 
 	def getClosestEnemyDistance(self, playerX, playerY):
@@ -187,6 +200,7 @@ class platformerEnv:
 			distance = ((coinX - playerX - 40) ** 2 + ((coinY+52) - (playerY+80)) ** 2) ** 0.5
 			if distance < minDistance:
 				minDistance = distance
+		
 		for goal in self.world.exit_group:
 			goalX = goal.rect.x
 			goalY = goal.rect.y
@@ -334,16 +348,20 @@ class Player():
 				if (action==4 or action==3 or action==4) and self.jumped == False and self.in_air == False:
 					self.vel_y = -15
 					self.jumped = True
+				
 				if (action==4 or action==3 or action==4) == False:
 					self.jumped = False
+				
 				if (action==0 or action==1):
 					self.dx -= 5*scale
 					self.counter += 1
 					self.direction = -1
+				
 				if (action==2 or action==3):
 					self.dx += 5*scale
 					self.counter += 1
 					self.direction = 1
+				
 				if (action==0 or action==1) == False and (action==2 or action==3) == False:
 					self.counter = 0
 					self.index = 0
@@ -357,16 +375,20 @@ class Player():
 				if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
 					self.vel_y = -15
 					self.jumped = True
+				
 				if key[pygame.K_SPACE] == False:
 					self.jumped = False
+				
 				if key[pygame.K_LEFT]:
 					self.dx -= 5*scale
 					self.counter += 1
 					self.direction = -1
+				
 				if key[pygame.K_RIGHT]:
 					self.dx += 5*scale
 					self.counter += 1
 					self.direction = 1
+				
 				if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
 					self.counter = 0
 					self.index = 0
@@ -381,8 +403,10 @@ class Player():
 				self.index += 1
 				if self.index >= len(self.images_right):
 					self.index = 0
+				
 				if self.direction == 1:
 					self.image = self.images_right[self.index]
+				
 				if self.direction == -1:
 					self.image = self.images_left[self.index]
 
@@ -450,12 +474,14 @@ class Player():
 		self.images_left = []
 		self.index = 0
 		self.counter = 0
+		
 		for num in range(1, 5):
 			img_right = pygame.image.load(f'img/guy{num}.png')
 			img_right = pygame.transform.scale(img_right, (40*scale, 80*scale))
 			img_left = pygame.transform.flip(img_right, True, False)
 			self.images_right.append(img_right)
 			self.images_left.append(img_left)
+		
 		self.dead_image = pygame.image.load('img/ghost.png')
 		self.image = self.images_right[self.index]
 		self.rect = self.image.get_rect()
@@ -493,6 +519,7 @@ class World():
 					img_rect.y = row_count * tile_size
 					tile = (img, img_rect)
 					self.tile_list.append(tile)
+				
 				# grass
 				if tile == 2:
 					img = pygame.transform.scale(grass_img, (tile_size, tile_size))
@@ -501,18 +528,22 @@ class World():
 					img_rect.y = row_count * tile_size
 					tile = (img, img_rect)
 					self.tile_list.append(tile)
+				
 				# enemy
 				if tile == 3:
 					blob = Enemy(col_count * tile_size, row_count * tile_size + 15)
 					self.blob_group.add(blob)
+				
 				# lava
 				if tile == 6:
 					lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
 					self.lava_group.add(lava)
+				
 				# coin
 				if tile == 7:
 					coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
 					self.coin_group.add(coin)
+				
 				# goal
 				if tile == 8:
 					exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
@@ -639,7 +670,7 @@ while run:
 		if event.type == pygame.QUIT:
 			run = False
 
-	if platformE.frame % 10 == 0:
+	if platformE.frame % 20 == 0:
 		platformE.d14Vector()
 
 	platformE.frame += 1
