@@ -5,6 +5,7 @@ import torch.nn.functional as nnf
 import torch.distributions as dist
 
 import numpy as np
+import platformer_tut8 as plat
 
 import networkModel as nm
 
@@ -41,30 +42,27 @@ def forward_pass(env, policy, discount_factor):
 
     policy.train()
     observation, info = env.reset()
-    prev_observation = observation
-
+    
+    # While Game not ended through Winning or Loss
     while not done:
+        # Creates Tensor to store observation
         observation = torch.FloatTensor(observation).unsqueeze(0)
+
+        # Passes current observation through neural network and takes distribution
         distribution = dist.Categorical(policy(observation))
         action = distribution.sample()
+
+        # logs probable action based on distribution
         log_prob_action = distribution.log_prob(action)
-
-        observation, reward, terminated, info = env.step(action.item())
-        done = terminated
-
-        if prev_observation[6] and prev_observation[7] and action == 0:
-            reward += 0.5 # increase reward for doing nothing after both leg touched ground
-        if (prev_observation[6] or prev_observation[7]): # once at least one leg touch ground
-            if action == 0:
-                reward += 0.2 # increase reward for doing nothing 
-            elif action == 2:
-                reward -= 0.1 # decrease it for firing main engine
-            else:
-                reward -= 0.05 # decrease it slighlty for firing side engine
-        prev_observation = observation
-
         log_prob_actions.append(log_prob_action)
+
+        # Performs the action calculated
+        observation, reward, terminated, info = env.step(action.item())
+        # Used to end while loop, check the game hasnt been won or ended
+        done = terminated
+        # Adds reward to rewards list for stepwise returns calculation
         rewards.append(reward)
+        # Adds reward for action being taken to running total
         episode_return += reward
 
     log_prob_actions = torch.cat(log_prob_actions)
@@ -139,7 +137,7 @@ def main():
     episode_returns = []
 
     
-    env = MarioGameEnv() 
+    env = plat.platformerEnv() 
 
     policy = nm.Network() 
 
