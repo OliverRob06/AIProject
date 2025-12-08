@@ -492,12 +492,12 @@ class Player():
 
 	def checkTerrian(self, pixelsToCheckx, pixelsToCheckY,world_data):
 		height = 0
-		yCord = math.floor(pixelsToCheckx/tile_size)
-		xCord = math.floor(pixelsToCheckY/tile_size)
+		xCord = math.floor(pixelsToCheckx/tile_size)
+		yCord = math.floor(pixelsToCheckY/tile_size)
 		if yCord >=20 or xCord >=20: #crashes if outside of 2D array world data
 			#error messsage
 			return
-		tileData = world_data[xCord][yCord] #the tile in front of us
+		tileData = world_data[yCord][xCord] #the tile in front of us
 		Terrian = self.getTerrian(tileData) #get Terrian Type
 
 
@@ -505,11 +505,11 @@ class Player():
 
 		if Terrian == 0 or Terrian == 2 or Terrian == 3: #if a air, enemy or objective   
 			for i in range (1,4):
-				xCord += 1 #add 1 to height to check tile above
+				yCord += 1 #add 1 to height to check tile above
 				height = (-i) #set height to the -index of the loop
 				if yCord >=20 or xCord >20: #check if inside 2D world boundaries
 					return
-				tileData = world_data[xCord][yCord] #get tile data
+				tileData = world_data[yCord][xCord] #get tile data
 
 				TerrianBelow = self.getTerrian(tileData) #get terrian again
 				if TerrianBelow == 1:
@@ -519,11 +519,11 @@ class Player():
 
 		elif Terrian == 1:
 			for i in range (1,4):
-				xCord -= 1
+				yCord -= 1
 				height = i
 				if yCord >=20 or xCord >20:
 					return
-				tileData = world_data[xCord][yCord]
+				tileData = world_data[yCord][xCord]
 				TerrianAbove = self.getTerrian(tileData)
 				if TerrianAbove == 0:
 					break
