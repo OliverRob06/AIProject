@@ -69,7 +69,6 @@ class platformerEnv:
 		self.player = Player()
 
 		#create dummy coin for showing the score
-		self.start_ticks = pygame.time.get_ticks()
 		self.score_coin = Coin(tile_size // 2, tile_size // 2)
 		self.world = World(world_data)
 		self.world.coin_group.add(self.score_coin)
@@ -632,7 +631,7 @@ while run:
 			platformE.player.reset()
 			platformE.game_over = 0
 			score = 0
-			start_time = pygame.time.get_ticks()
+			platformE.start_time = pygame.time.get_ticks()
 			platformE.gameWon += 1
 			platformE.world = platformE.reset_level()
 			
