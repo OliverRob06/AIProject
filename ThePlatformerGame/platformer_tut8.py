@@ -5,7 +5,7 @@ from pygame.locals import * # pyright: ignore[reportMissingImports]
 pygame.init()		
         
 #						The Environment Global Variables
-scale = 1
+scale = 0.7
 slowerEnemy = False
 clock = pygame.time.Clock()
 fps = 60
@@ -63,6 +63,7 @@ world_data = [
 
 
 class platformerEnv:
+	# Initialize the environment
 	def __init__(self):
 		
 		#Initialize Environment with default attributes
@@ -73,23 +74,18 @@ class platformerEnv:
 		self.world = World(world_data)
 		self.world.coin_group.add(self.score_coin)
 
-		#create buttons
-		self.restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
-		self.start_button = Button(screen_width // 2 - 350, screen_height // 2, start_img)
-		self.exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
-		self.win_button = Button(screen_width //2 - 50, screen_height// 2, win_img)
-
 		self.start_time = pygame.time.get_ticks()
 		self.gameWon = False
 		self.wonTime = 0	
 		self.frame = 0
 		self.game_over = 0
-		
-
-	def draw_text(self,text, font, text_col, x, y):
+	
+	# Function to draw text on screen
+	def draw_text(self, text, font, text_col, x, y):
 		img = font.render(text, True, text_col)
 		screen.blit(img, (x, y))
-		
+
+	# Reset the level	
 	def reset_level(self):
 		self.player.reset()
 		self.world.blob_group.empty()
@@ -103,6 +99,7 @@ class platformerEnv:
 		world.coin_group.add(score_coin)
 		return world
 
+	# Prints values for debugging
 	def d14Vector(self):
 		# player position
 		playerX = self.player.rect.x
@@ -148,11 +145,6 @@ class platformerEnv:
 
 		# time spent
 		timeSpent = pygame.time.get_ticks() - self.start_time
-		
-
-
-		
-
 
 		print("Player X: ", playerX)
 		print("Player Y: ", playerY)
@@ -180,6 +172,7 @@ class platformerEnv:
 
 		print("Time Spent (ms): ", timeSpent)
 
+	# Get distance to closest enemy
 	def getClosestEnemyDistance(self, playerX, playerY):
 		minDistance = float('inf')
 		for enemy in self.world.blob_group:
@@ -192,6 +185,7 @@ class platformerEnv:
 
 		return minDistance
 	
+	# Get distance to closest goal or coin
 	def getClosestGoalOrCoinDistance(self, playerX, playerY):
 		minDistance = float('inf')
 		for coin in self.world.coin_group:
@@ -221,7 +215,7 @@ class platformerEnv:
 		# Return the initial state of the game and an empty info dict
 		return self.get_state(), {}
 
-	# Steal d14Vecotr code when done
+	# Steal d14Vector code when done
 	def step(self, action):
 		# Handle Pygame events (keep window from freezing)
 		for event in pygame.event.get():
@@ -263,7 +257,7 @@ class platformerEnv:
 		# Return new observation given new state, reward calculated and game over
 		return self.get_state(), reward, terminated, {}
 
-	# Inside platformerEnv
+	# Returns observation of current state
 	def get_state(self):
 		# create empty set for observation
 		state_vector = []
@@ -274,6 +268,7 @@ class platformerEnv:
 		state_vector.append(self.player.rect.x)
 		# Adds player y position 
 		state_vector.append(self.player.rect.y)
+
 		# Adds player in air boolean as 1 or 0 
 		state_vector.append(int(self.player.in_air))
 		# Adds player vertical velocity 
@@ -293,44 +288,14 @@ class platformerEnv:
 		# Returns Set turned into NumPy Float Tensor 
 		return np.array(state_vector, dtype=np.float32)
 
-		
-
-class Button():
-	def __init__(self, x, y, image):
-		self.image = image
-		self.rect = self.image.get_rect()
-		self.rect.x = x
-		self.rect.y = y
-		self.clicked = False
-
-	def draw(self):
-		action = False
-
-		#get mouse position
-		pos = pygame.mouse.get_pos()
-
-		#check mouseover and clicked conditions
-		if self.rect.collidepoint(pos):
-			if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-				action = True
-				self.clicked = True
-
-		if pygame.mouse.get_pressed()[0] == 0:
-			self.clicked = False
-
-
-		#draw button
-		screen.blit(self.image, self.rect)
-
-		return action
-
 class Player():
+	# Initialize player
 	def __init__(self):
 		self.reset()
 
-
-	# action corresponds to either 10 for player input, or 0-5 for ai input
+	# Fucntion to update player position (moving the player)
 	def update(self, action, world, game_over):
+		# action corresponds to either 10 for player input, or 0-5 for ai input
 		self.dx = 0
 		self.dy = 0
 		self.walk_cooldown = 5
@@ -344,24 +309,29 @@ class Player():
 		5: do nothing
 		"""
 		if game_over == 0:
-			if (action<7) :
-				if (action==4 or action==3 or action==4) and self.jumped == False and self.in_air == False:
+			# Use AI actions for inputs
+			if (action<10) :
+				# AI jumping with varients (up left, up right and staight up)
+				if (action==1 or action==3 or action==4) and self.jumped == False and self.in_air == False:
 					self.vel_y = -15
 					self.jumped = True
-				
-				if (action==4 or action==3 or action==4) == False:
+				# Reset jump when not jumping
+				if (action==1 or action==3 or action==4) == False:
 					self.jumped = False
 				
+				# AI left movements with varients (left, left up)
 				if (action==0 or action==1):
 					self.dx -= 5*scale
 					self.counter += 1
 					self.direction = -1
 				
+				# AI right movements with varients (right, right up)
 				if (action==2 or action==3):
 					self.dx += 5*scale
 					self.counter += 1
 					self.direction = 1
 				
+				# No left/right movement input from AI
 				if (action==0 or action==1) == False and (action==2 or action==3) == False:
 					self.counter = 0
 					self.index = 0
@@ -369,26 +339,32 @@ class Player():
 						self.image = self.images_right[self.index]
 					if self.direction == -1:
 						self.image = self.images_left[self.index]
+
+			# Use player keyboard inputs
 			else:
-				
+				# Human jumping
 				key = pygame.key.get_pressed()
 				if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
 					self.vel_y = -15
 					self.jumped = True
-				
+
+				# Reset jump when not jumping
 				if key[pygame.K_SPACE] == False:
 					self.jumped = False
 				
+				# Human left movement
 				if key[pygame.K_LEFT]:
 					self.dx -= 5*scale
 					self.counter += 1
 					self.direction = -1
 				
+				# Human right movement
 				if key[pygame.K_RIGHT]:
 					self.dx += 5*scale
 					self.counter += 1
 					self.direction = 1
 				
+				# No left/right movement input from human
 				if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
 					self.counter = 0
 					self.index = 0
@@ -448,14 +424,11 @@ class Player():
 			if pygame.sprite.spritecollide(self, world.exit_group, False):
 				game_over = 1
 			
-			
-				
-
 			#update player coordinates
 			self.rect.x += self.dx
 			self.rect.y += self.dy
 
-
+		# draw ghost to screen upon death	
 		elif game_over == -1:
 			self.image = self.dead_image
 			if self.rect.y > 200:
@@ -469,12 +442,14 @@ class Player():
 		
 		return game_over
 
+	# Reset player position
 	def reset(self):
 		self.images_right = []
 		self.images_left = []
 		self.index = 0
 		self.counter = 0
 		
+		# draw animation for the player
 		for num in range(1, 5):
 			img_right = pygame.image.load(f'img/guy{num}.png')
 			img_right = pygame.transform.scale(img_right, (40*scale, 80*scale))
@@ -483,6 +458,8 @@ class Player():
 			self.images_left.append(img_left)
 		
 		self.dead_image = pygame.image.load('img/ghost.png')
+
+		# reset player default position
 		self.image = self.images_right[self.index]
 		self.rect = self.image.get_rect()
 		self.rect.x = 100
@@ -495,9 +472,11 @@ class Player():
 		self.in_air = True
 
 class World():
+	# Initialize world with level data
 	def __init__(self, data):
 		self.tile_list = []
 
+		# create sprite groups
 		self.blob_group = pygame.sprite.Group()
 		self.lava_group = pygame.sprite.Group()
 		self.coin_group = pygame.sprite.Group()
@@ -508,10 +487,13 @@ class World():
 		grass_img = pygame.image.load('img/grass.png')
 
 		row_count = 0
+
+		# for each value in the world data and create the corresponding tile/enemy/coin at that position 
+		# 2d for loop
 		for row in data:
 			col_count = 0
 			for tile in row:
-				# dirt
+				# if tile is dirt
 				if tile == 1:
 					img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
 					img_rect = img.get_rect()
@@ -520,7 +502,7 @@ class World():
 					tile = (img, img_rect)
 					self.tile_list.append(tile)
 				
-				# grass
+				# if tile is grass
 				if tile == 2:
 					img = pygame.transform.scale(grass_img, (tile_size, tile_size))
 					img_rect = img.get_rect()
@@ -529,12 +511,12 @@ class World():
 					tile = (img, img_rect)
 					self.tile_list.append(tile)
 				
-				# enemy
+				# if tile is enemy
 				if tile == 3:
 					blob = Enemy(col_count * tile_size, row_count * tile_size + 15)
 					self.blob_group.add(blob)
 				
-				# lava
+				# if tile is lava
 				if tile == 6:
 					lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
 					self.lava_group.add(lava)
@@ -544,13 +526,14 @@ class World():
 					coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
 					self.coin_group.add(coin)
 				
-				# goal
+				# if tile is goal
 				if tile == 8:
 					exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
 					self.exit_group.add(exit)
 				col_count += 1
 			row_count += 1
 
+	# Draw the world
 	def draw(self):
 		for tile in self.tile_list:
 			screen.blit(tile[0], tile[1])
@@ -559,6 +542,7 @@ class World():
 				pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
 class Enemy(pygame.sprite.Sprite):
+	# Initialize enemy
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/blob.png')
@@ -568,9 +552,15 @@ class Enemy(pygame.sprite.Sprite):
 
 		self.rect.y = y-((tile_size/3)-tile_size*0.3)
 		
-		self.move_direction = 1
+		# randomly choose left or right direction at beginning
+		if pygame.time.get_ticks() % 2 == 0:
+			self.move_direction = 1
+		else:
+			self.move_direction = -1
+
 		self.move_counter = 0
 
+	# Update enemy position
 	def update(self):
 		if slowerEnemy:
 			if self.move_counter %2 == 0:
@@ -580,12 +570,13 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.x += self.move_direction
 			self.move_counter += 1
 		
-		
+		# change direction if has moved 50 pixels
 		if abs(self.move_counter) > 50*scale:
 			self.move_direction *= -1
 			self.move_counter *= -1
 
 class Lava(pygame.sprite.Sprite):
+	# Initialize lava
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/lava.png')
@@ -595,6 +586,7 @@ class Lava(pygame.sprite.Sprite):
 		self.rect.y = y
 
 class Coin(pygame.sprite.Sprite):
+	# Initialize coin
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/coin.png')
@@ -603,6 +595,7 @@ class Coin(pygame.sprite.Sprite):
 		self.rect.center = (x, y)
 
 class Exit(pygame.sprite.Sprite):
+	# Initialize exit
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('img/exit.png')
@@ -625,7 +618,6 @@ while run:
 	platformE.world.draw()
 	
 	if platformE.game_over == 0:
-		
 		if platformE.gameWon >= 1:
 			current_time = platformE.wonTime
 
