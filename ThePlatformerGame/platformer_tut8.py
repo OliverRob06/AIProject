@@ -1,6 +1,6 @@
-import pygame # pyright: ignore[reportMissingImports]
-import numpy as np # pyright: ignore[reportMissingImports]
-from pygame.locals import * # pyright: ignore[reportMissingImports]
+import pygame 
+import numpy as np 
+from pygame.locals import *
 import math
 pygame.init()		
         

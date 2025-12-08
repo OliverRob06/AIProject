@@ -1,5 +1,5 @@
-import torch.nn as nn  # pyright: ignore[reportMissingImports]
-import torch.nn.functional as nnf  # pyright: ignore[reportMissingImports]  
+import torch.nn as nn  
+import torch.nn.functional as nnf   
 
 class Network(nn.Module):
     def __init__(self):
