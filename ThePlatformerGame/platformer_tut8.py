@@ -280,17 +280,16 @@ class platformerEnv:
 		# Adds player vertical velocity 
 		state_vector.append(self.player.rect.y - (self.player.rect.y - self.player.vel_y))
 
-		
 		# Add terrain infront of players relative height to player
-		# state_vector.append(self.player.getNearestSurface())
-
+		state_vector.append(Player.getTerrianInFront())		
+		
 		# Add distance to nearest enemy
 		state_vector.append(self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y))
 
 		# Add distance to nearest coin or goal
 		state_vector.append(self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y))
 
-		state_vector.append(Player.getTerrianInFront())
+		
 
 
 		# Returns Set turned into NumPy Float Tensor 
@@ -763,6 +762,7 @@ while run:
 			platformE.player.reset()
 			platformE.game_over = 0
 			score = 0
+			print("Level Complete! Time taken:", seconds, "seconds and", milliseconds, "milliseconds")
 			platformE.start_time = pygame.time.get_ticks()
 			platformE.gameWon += 1
 			platformE.world = platformE.reset_level()
@@ -770,7 +770,7 @@ while run:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			run = False
-
+	
 	if platformE.frame % 20 == 0:
 		platformE.d14Vector()
 
