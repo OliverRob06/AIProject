@@ -105,32 +105,49 @@ class platformerEnv:
 		return world
 
 	def d14Vector(self):
+		# player position
 		playerX = self.player.rect.x
 		playerY = self.player.rect.y
 
+
+		#player input
 		key = pygame.key.get_pressed()
 		left = key[pygame.K_LEFT]
 		right = key[pygame.K_RIGHT]
 		space = key[pygame.K_SPACE]
 		
+		#nothing pressed
 		if not left and not right and not space:
 			nothing = True
 		else:
 			nothing = False
 
+		# player in air
 		playerInAir = self.player.in_air 
 
+		# player vertical velocity
 		playerVelY = self.player.rect.y - (self.player.rect.y - self.player.vel_y)
 
 		# see terrain infront of player
 		# later
 
-		# enemies coords
-		# later
+		# enemy positions
+		for enemy in self.world.blob_group:
+			enemyX = enemy.rect.x
+			enemyY = enemy.rect.y
 
+		# goal position
+		playX = self.player.rect.x
+		playY = self.player.rect.y
+		for exit in self.world.exit_group:
+			exitX = exit.rect.x
+			exitY = exit.rect.y
+
+		# distances
 		closestEnemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
 		closestGoalOrCoin = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 
+		# time spent
 		timeSpent = pygame.time.get_ticks() - self.start_time
 		
 
@@ -147,15 +164,7 @@ class platformerEnv:
 		print("Player In Air: ", playerInAir)
 		print("Player Vel Y: ", playerVelY)
 		#Terrain
-		for enemy in self.world.blob_group:
-			enemyX = enemy.rect.x
-			enemyY = enemy.rect.y
 
-		playX = self.player.rect.x
-		playY = self.player.rect.y
-		for exit in self.world.exit_group:
-			exitX = exit.rect.x
-			exitY = exit.rect.y
 		print("Enemy X: ", enemyX)
 		print("Enemy Y: ", enemyY)
 
@@ -164,6 +173,7 @@ class platformerEnv:
 
 		print("Goal x: ", exitX)
 		print("Goal y: ", exitY)
+		
 		print("Player x: ", playX)
 		print("Player y: ", playY)
 		print("Time Spent (ms): ", timeSpent)
