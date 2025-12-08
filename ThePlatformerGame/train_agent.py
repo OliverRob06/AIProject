@@ -42,19 +42,27 @@ def forward_pass(env, policy, discount_factor):
 
     policy.train()
     observation, info = env.reset()
-    prev_observation = observation
-
+    
+    # While Game not ended through Winning or Loss
     while not done:
+        # Creates Tensor to store observation
         observation = torch.FloatTensor(observation).unsqueeze(0)
+
+        # Passes current observation through neural network and takes distribution
         distribution = dist.Categorical(policy(observation))
         action = distribution.sample()
+
+        # logs probable action based on distribution
         log_prob_action = distribution.log_prob(action)
-
-        observation, reward, terminated, info = env.step(action.item())
-        done = terminated
-
         log_prob_actions.append(log_prob_action)
+
+        # Performs the action calculated
+        observation, reward, terminated, info = env.step(action.item())
+        # Used to end while loop, check the game hasnt been won or ended
+        done = terminated
+        # Adds reward to rewards list for stepwise returns calculation
         rewards.append(reward)
+        # Adds reward for action being taken to running total
         episode_return += reward
 
     log_prob_actions = torch.cat(log_prob_actions)
