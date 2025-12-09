@@ -19,6 +19,13 @@ def terrain_ai(platform_env):
     dx = target.rect.centerx - player.rect.centerx
     dy = target.rect.centery - player.rect.centery
 
+    # If coin is above player, jump towards it
+    if dy < -50:  # Coin is significantly above
+        if dx > 0:
+            return 3  # Jump right
+        else:
+            return 1  # Jump left
+
     # Set direction before checking terrain
     player.direction = 1 if dx > 0 else -1
 
@@ -52,6 +59,8 @@ def terrain_ai(platform_env):
         if height==2:
             return 5
         return 5  # Default fallback
+    
+    return 5
 
 
 def getTerrainInFront(player):
@@ -151,7 +160,7 @@ def closest_sprite(player, sprites):
     for s in sprites:
         dist = math.hypot(
             player.rect.centerx - s.rect.centerx,
-            player.rect.centery - s.rect.centery,
+            (player.rect.centery - s.rect.centery)*1.5,
         )
         if dist < min_dist:
             min_dist = dist
