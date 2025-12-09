@@ -2,6 +2,7 @@ import pygame
 import numpy as np 
 from pygame.locals import *
 import math
+import sys
 	
 pygame.init()
 pygame.font.init()	
@@ -301,6 +302,7 @@ class platformerEnv:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
+				sys.exit()
 
 		if self.gameWon >= 1:
 			current_time = self.wonTime
@@ -385,6 +387,7 @@ class Player():
 
 	# Fucntion to update player position (moving the player)
 	def update(self, action, world, game_over):
+		global screen
 		# action corresponds to either 10 for player input, or 0-5 for ai input
 		self.dx = 0
 		self.dy = 0
@@ -882,3 +885,4 @@ def humanOrPathfind(use_ai):
 		pygame.display.update()
 
 	pygame.quit()
+	sys.exit()
