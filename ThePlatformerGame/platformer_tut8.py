@@ -32,21 +32,21 @@ font_score = pygame.font.SysFont('Bauhaus 93', 30)
 black = (0, 0,0)
 
 #load images
-sun_img = pygame.image.load('./img/sun.png')
-bg_img = pygame.image.load('./img/sky.png')
-restart_img = pygame.image.load('./img/restart_btn.png')
-start_img = pygame.image.load('./img/start_btn.png')
-exit_img = pygame.image.load('./img/exit_btn.png')
-win_img = pygame.image.load('./img/youwin.png')
+sun_img = pygame.image.load('./ThePlatformerGame/img/sun.png')
+bg_img = pygame.image.load('./ThePlatformerGame/img/sky.png')
+restart_img = pygame.image.load('./ThePlatformerGame/img/restart_btn.png')
+start_img = pygame.image.load('./ThePlatformerGame/img/start_btn.png')
+exit_img = pygame.image.load('./ThePlatformerGame/img/exit_btn.png')
+win_img = pygame.image.load('./ThePlatformerGame/img/youwin.png')
 #dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
 world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 8, 0, 0, 2, 2, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1], 
 [1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 7, 2, 2, 1, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 6, 6, 2, 2, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 2, 2, 6, 6, 2, 2, 1, 1, 1, 1], 
 [1, 0, 0, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
@@ -122,7 +122,6 @@ class platformerEnv:
 		playerX = self.player.rect.x
 		playerY = self.player.rect.y
 
-
 		#player input
 		key = pygame.key.get_pressed()
 		left = key[pygame.K_LEFT]
@@ -173,10 +172,10 @@ class platformerEnv:
 		else:
 			pixelsToCheckx = self.player.rect.x+50#block on right
 			pixelsToCheckY = self.player.rect.y+79
-		print("Pixels to check X: ", pixelsToCheckx)
-		print("Pixels to check Y: ", pixelsToCheckY)
+		#print("Pixels to check X: ", pixelsToCheckx)
+		#print("Pixels to check Y: ", pixelsToCheckY)
 
-		print(Height)
+		#print(Height)
 
 		"""print("Player X: ", playerX)
 		print("Player Y: ", playerY)
@@ -650,13 +649,13 @@ class Player():
 		
 		# draw animation for the player
 		for num in range(1, 5):
-			img_right = pygame.image.load(f'./img/guy{num}.png')
+			img_right = pygame.image.load(f'./ThePlatformerGame/img/guy{num}.png')
 			img_right = pygame.transform.scale(img_right, (40*scale, 80*scale))
 			img_left = pygame.transform.flip(img_right, True, False)
 			self.images_right.append(img_right)
 			self.images_left.append(img_left)
 		
-		self.dead_image = pygame.image.load('./img/ghost.png')
+		self.dead_image = pygame.image.load('./ThePlatformerGame/img/ghost.png')
 
 		# reset player default position
 		self.image = self.images_right[self.index]
@@ -667,7 +666,7 @@ class Player():
 		self.height = self.image.get_height()
 		self.vel_y = 0
 		self.jumped = False
-		self.direction = 0
+		self.direction = 1
 		self.in_air = True
 
 class World():
@@ -682,8 +681,8 @@ class World():
 		self.exit_group = pygame.sprite.Group()
 
 		#load images
-		dirt_img = pygame.image.load('./img/dirt.png')
-		grass_img = pygame.image.load('./img/grass.png')
+		dirt_img = pygame.image.load('./ThePlatformerGame/img/dirt.png')
+		grass_img = pygame.image.load('./ThePlatformerGame/img/grass.png')
 
 		row_count = 0
 
@@ -744,7 +743,7 @@ class Enemy(pygame.sprite.Sprite):
 	# Initialize enemy
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
-		img = pygame.image.load('./img/blob.png')
+		img = pygame.image.load('./ThePlatformerGame/img/blob.png')
 		self.image = pygame.transform.scale(img, (tile_size-1, tile_size-tile_size*0.3))
 		self.rect = self.image.get_rect()
 		self.rect.x = x
@@ -778,7 +777,7 @@ class Lava(pygame.sprite.Sprite):
 	# Initialize lava
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
-		img = pygame.image.load('./img/lava.png')
+		img = pygame.image.load('./ThePlatformerGame/img/lava.png')
 		self.image = pygame.transform.scale(img, (tile_size, tile_size // 2))
 		self.rect = self.image.get_rect()
 		self.rect.x = x
@@ -788,7 +787,7 @@ class Coin(pygame.sprite.Sprite):
 	# Initialize coin
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
-		img = pygame.image.load('./img/coin.png')
+		img = pygame.image.load('./ThePlatformerGame/img/coin.png')
 		self.image = pygame.transform.scale(img, (tile_size // 2, tile_size // 2))
 		self.rect = self.image.get_rect()
 		self.rect.center = (x, y)
@@ -797,7 +796,7 @@ class Exit(pygame.sprite.Sprite):
 	# Initialize exit
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
-		img = pygame.image.load('./img/exit.png')
+		img = pygame.image.load('./ThePlatformerGame/img/exit.png')
 		self.image = pygame.transform.scale(img, (tile_size, int(tile_size * 1.5)))
 		self.rect = self.image.get_rect()
 		self.rect.x = x
