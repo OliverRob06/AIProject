@@ -142,5 +142,3 @@ def agentStart():
         print(param, "\t", policy.state_dict()[param].size())
 
     torch.save(policy.state_dict(), './policy.pt')
-
-main()
