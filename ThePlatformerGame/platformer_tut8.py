@@ -48,8 +48,8 @@ world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 6, 6, 2, 2, 1, 1, 1, 1], 
 [1, 0, 0, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
-[1, 2, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 1, 0, 7, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 1], 
+[1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 1, 0, 7, 0, 0, 7, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 1], 
 [1, 1, 2, 2, 0, 0, 0, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 1], 
 [1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 7, 1], 
 [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1], 
@@ -862,7 +862,6 @@ while run:
 		if pygame.sprite.spritecollide(platformE.player, platformE.world.coin_group, True):
 			score += 1
 			
-		
 		platformE.world.blob_group.draw(screen)
 		platformE.world.lava_group.draw(screen)
 		platformE.world.coin_group.draw(screen)
@@ -878,7 +877,7 @@ while run:
 		else:
 			action = 10  # Use 10 to indicate player control
 		
-		print("AI Action:", action)
+		#print("AI Action:", action)
 		platformE.game_over = platformE.player.update(action, platformE.world, platformE.game_over)
 
 		#if player has died

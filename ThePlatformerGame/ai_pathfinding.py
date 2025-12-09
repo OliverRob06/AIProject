@@ -5,6 +5,7 @@ import math
 
 LOOKAHEAD = 1  # just check one tile ahead like your system
 
+
 def terrain_ai(platform_env):
     global world_data
     player = platform_env.player
@@ -19,12 +20,6 @@ def terrain_ai(platform_env):
     dx = target.rect.centerx - player.rect.centerx
     dy = target.rect.centery - player.rect.centery
 
-    # If coin is above player, jump towards it
-    if dy < -50:  # Coin is significantly above
-        if dx > 0:
-            return 3  # Jump right
-        else:
-            return 1  # Jump left
 
     # Set direction before checking terrain
     player.direction = 1 if dx > 0 else -1
@@ -67,34 +62,47 @@ def terrain_ai(platform_env):
         if height==1:
             return 1
         if height==2:
-            return 5
+            return 1
         return 5  # Default fallback
     
     return 5
 
 
 def getTerrainInFront(player):
-		#tile size = 50px^2
-		#dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
-		#player coords
-		xPos = player.rect.x #100 by default
-		yPos = player.rect.y #870 by default
+    # Player position
+    xPos = player.rect.x
+    yPos = player.rect.y
 
+    pixelsToCheckY = yPos + 79
+    
+    #facing left
+    if player.direction == -1:
+        pixelsToCheckx = xPos - 10
+    #facing right
+    else:
+        pixelsToCheckx = xPos + 50
 
-		#find block below
+    blockCheck = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
 
-		#direction player faces
-		if player.direction == -1:  #facing left
-			pixelsToCheckx = xPos+25 #block on left
-			pixelsToCheckY = yPos+79
-			Height = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
-		else:
-			pixelsToCheckx = xPos+50#block on right
-			pixelsToCheckY = yPos+79
-			Height = checkTerrain(player, pixelsToCheckx, pixelsToCheckY,world_data)
-		
-		return Height
-		
+    # if no gap detected
+    if blockCheck != -3:
+        # facing left
+        if player.direction == -1:   
+            pixelsToCheckx = xPos - 10
+        # facing right
+        elif player.direction == 1: 
+            pixelsToCheckx = xPos + 50
+
+        Height = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
+        return Height
+
+    # gap detected
+    print("PIT AHEAD")    
+    pixelsToCheckx = xPos + 25
+
+    # Second pit check, closer to player
+    Height = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
+    return Height
 
 	#return relative height
 	#3 big wall
@@ -169,7 +177,7 @@ def closest_sprite(player, sprites):
     closest = None
     for s in sprites:
         dist = math.hypot(
-            player.rect.centerx - s.rect.centerx,
+            player.rect.centerx - s.rect.centerx-1,
             (player.rect.centery - s.rect.centery)*1.5,
         )
         if dist < min_dist:
