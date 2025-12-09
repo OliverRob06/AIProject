@@ -97,32 +97,7 @@ def terrain_ai(platform_env):
 			return 1
 		return 5  # Default fallback
 	return 5  # Default fallback
-	
-def checkForSlimeInPath(player, slimeX, slimeD, platform_env):
-	"""Check if there's a slime directly in the player's path"""
-	if slimeD <= 0 or slimeD > 100:  # Too far or invalid
-		return False
-	
-	player_x = player.rect.centerx
-	player_y = player.rect.y
-	
-	# Check if slime is roughly at same vertical level
-	for enemy in platform_env.world.blob_group:
-		enemy_y = enemy.rect.y
-		
-		# Check vertical alignment (within 1 tile height difference)
-		if abs(enemy_y - player_y) < 100:  # Less than 2 tiles difference
-			
-			# Check if slime is in front of player in current direction
-			if player.direction == 1:  # Moving right
-				if enemy.rect.centerx > player_x and enemy.rect.centerx < player_x + 150:
-					return True
-			else:  # Moving left
-				if enemy.rect.centerx < player_x and enemy.rect.centerx > player_x - 150:
-					return True
-	
-	return False
-	
+
 
 def getTerrainInFront(player):
 	# Player position
