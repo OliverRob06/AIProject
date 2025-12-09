@@ -234,7 +234,7 @@ class platformerEnv:
 		# Return the initial state of the game and an empty info dict
 		return self.get_state(), {}
 
-	# Steal d14Vector code when done
+	# AI takes action and returns new state and reward associated
 	def step(self, action):
 		# Handle Pygame events (keep window from freezing)
 		for event in pygame.event.get():
