@@ -10,10 +10,10 @@ import platformer_tut8 as plat
 import networkModel as nm
 
 
-MAX_EPOCHS = 1500 
+MAX_EPOCHS = 150 
 DISCOUNT_FACTOR = 0.99
 N_TRIALS = 20
-REWARD_THRESHOLD = 250 
+REWARD_THRESHOLD = 150 
 PRINT_INTERVAL = 10
 
 LEARNING_RATE = 0.003
@@ -86,53 +86,6 @@ def update_policy(stepwise_returns, log_prob_actions, optimizer):
 
     return loss.item()
 
-
-#################################################################################
-#                                   A* Search
-#################################################################################
-
-def manhatten(playerPosition, coinPosition):
-    
-    
-    playerX, playerY = playerPosition
-    coinX, coinY = coinPosition
-
-    return abs(coinX - coinY) + abs(playerX - playerY) #the distance to the coin
- 
-# def findNearestCoin(playerPosition, coinPosition):
-    
-#     # if coinPosition == null: #if no coins are left
-#     #     return 0
-
-#     coinDistance = [manhatten(playerPosition, coinPosition)
-#                     for coinPosition in coin_positions]
-
-#     return coinDistance
-
-#this needs to be nodes not player positions( the goal node and end node
-#https://www.datacamp.com/tutorial/a-star-algorithm?dc_referrer=https%3A%2F%2Fwww.google.com%2F
-def ASearch(playerPosition, coinPosition):
-    
-    coinPosition = closestGoalOrCoin()
-
-    openNodes = [playerPosition]
-    closeNodes = []
-
-    #innitilising node propperties
-    playerPosition.c = 0                                        #starting cost is 0 (the actual cost)
-    playerPosition.h = manhatten(playerPosition, coinPosition)  #huristic, estimate to goal
-    playerPosition.f = playerPosition.g + playerPosition.h      #total cost estimate
-    playerPosition.parent = null 
-
-    while openNodes != null:
-    
-
-        return path
-
-
-# At the very top of your script
-# import your class or define it
-
 def main():   
     episode_returns = []
 
@@ -172,3 +125,48 @@ def main():
     torch.save(policy.state_dict(), './policy.pt')
 
 main()
+
+
+#################################################################################
+#                                   A* Search
+#################################################################################
+"""
+def manhatten(playerPosition, coinPosition):
+    
+    
+    playerX, playerY = playerPosition
+    coinX, coinY = coinPosition
+
+    return abs(coinX - coinY) + abs(playerX - playerY) #the distance to the coin
+ 
+# def findNearestCoin(playerPosition, coinPosition):
+    
+#     # if coinPosition == null: #if no coins are left
+#     #     return 0
+
+#     coinDistance = [manhatten(playerPosition, coinPosition)
+#                     for coinPosition in coin_positions]
+
+#     return coinDistance
+
+#this needs to be nodes not player positions( the goal node and end node
+#https://www.datacamp.com/tutorial/a-star-algorithm?dc_referrer=https%3A%2F%2Fwww.google.com%2F
+def ASearch(playerPosition, coinPosition):
+    
+    coinPosition = closestGoalOrCoin()
+
+    openNodes = [playerPosition]
+    closeNodes = []
+
+    #innitilising node propperties
+    playerPosition.c = 0                                        #starting cost is 0 (the actual cost)
+    playerPosition.h = manhatten(playerPosition, coinPosition)  #huristic, estimate to goal
+    playerPosition.f = playerPosition.g + playerPosition.h      #total cost estimate
+    playerPosition.parent = null 
+
+    while openNodes != null:
+    
+
+        return path
+
+"""
