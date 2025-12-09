@@ -52,8 +52,7 @@ def terrain_ai(platform_env):
         if height==2:
             return 5
         return 5  # Default fallback
-    else:
-        return 5  
+
 
 def getTerrainInFront(player):
 		#tile size = 50px^2
