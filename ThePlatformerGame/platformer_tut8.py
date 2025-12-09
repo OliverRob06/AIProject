@@ -245,6 +245,8 @@ class platformerEnv:
 		score = 0
 		self.prevDistance = 1
 		self.world = self.reset_level()
+
+		self.start_time = pygame.time.get_ticks()
 		
 		
 		
@@ -259,6 +261,12 @@ class platformerEnv:
 		# Translate the given number corresponding to an action, and make subsequent movement.
 		self.game_over = self.player.update(action, self.world, self.game_over)
 		
+		# If Timeout Kill Player
+		timePassed = (pygame.time.get_ticks() - self.start_time) / 1000
+		if timePassed > 25:
+			self.game_over = -1
+
+
 		# For calculating reward
 		# Starts at -0.5 to incentivise taking less time
 		reward = -0.5
@@ -269,10 +277,10 @@ class platformerEnv:
 			reward -= 3
 		# If player has died
 		if self.game_over == -1:
-				reward-=100
+				reward-=1000
 		# If player reaches wins
 		if self.game_over == 1:
-			reward+=100
+			reward+=1000
 		# If player reaches coin (checkpoint)
 		if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
 			# Update Agent reward
@@ -281,7 +289,7 @@ class platformerEnv:
 			score += 1
 		# Deincentivise looking at a wall
 		if self.player.getHeight() == 3:
-			score -=5
+			reward -=1			
 
 		
 		
