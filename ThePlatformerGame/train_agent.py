@@ -86,7 +86,7 @@ def update_policy(stepwise_returns, log_prob_actions, optimizer):
 
     return loss.item()
 
-def main():   
+def agentStart():   
     episode_returns = []
 
     
@@ -123,8 +123,6 @@ def main():
         print(param, "\t", policy.state_dict()[param].size())
 
     torch.save(policy.state_dict(), './policy.pt')
-
-main()
 
 
 #################################################################################
