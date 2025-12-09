@@ -10,17 +10,36 @@ import platformer_tut8 as plat
 import networkModel as nm
 
 
-MAX_EPOCHS = 150 
+MAX_EPOCHS = 2000
 DISCOUNT_FACTOR = 0.99
 N_TRIALS = 20
-REWARD_THRESHOLD = 150 
+REWARD_THRESHOLD = 1500 
 PRINT_INTERVAL = 10
 
-LEARNING_RATE = 0.003
+LEARNING_RATE = 0.003 # 0.003
 LEARNING_RATE_BOOST = 0.006
-MAX_BOOST_EPOCH = 800
+MAX_BOOST_EPOCH = 1200
 
 
+def manualSaveCheck(policy):
+    # Checks for S Keypress
+    import pygame
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            import sys
+            import torch
+            pygame.quit()
+            sys.exit()
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                 # save the learned policy
+                for param in policy.state_dict():
+                    print(param, "\t", policy.state_dict()[param].size())
+
+                torch.save(policy.state_dict(), './policy.pt')
+                return True  # Signal that a save occurred
+    return False
 
 def calculate_stepwise_returns(rewards, discount_factor):
     returns = []
@@ -101,7 +120,7 @@ def agentStart():
 
     for episode in range(1, MAX_EPOCHS+1):
         episode_return, stepwise_returns, log_prob_actions = forward_pass(env, policy, DISCOUNT_FACTOR)
-
+        manualSaveCheck(policy)
         if episode_return > 0 and episode < MAX_BOOST_EPOCH:
             print(f'Boosting learning rate at episode {episode:3} with score {episode_return:5.1f}!')
             optimizer.param_groups[0]['lr'] = LEARNING_RATE_BOOST 
@@ -123,48 +142,3 @@ def agentStart():
         print(param, "\t", policy.state_dict()[param].size())
 
     torch.save(policy.state_dict(), './policy.pt')
-
-
-#################################################################################
-#                                   A* Search
-#################################################################################
-"""
-def manhatten(playerPosition, coinPosition):
-    
-    
-    playerX, playerY = playerPosition
-    coinX, coinY = coinPosition
-
-    return abs(coinX - coinY) + abs(playerX - playerY) #the distance to the coin
- 
-# def findNearestCoin(playerPosition, coinPosition):
-    
-#     # if coinPosition == null: #if no coins are left
-#     #     return 0
-
-#     coinDistance = [manhatten(playerPosition, coinPosition)
-#                     for coinPosition in coin_positions]
-
-#     return coinDistance
-
-#this needs to be nodes not player positions( the goal node and end node
-#https://www.datacamp.com/tutorial/a-star-algorithm?dc_referrer=https%3A%2F%2Fwww.google.com%2F
-def ASearch(playerPosition, coinPosition):
-    
-    coinPosition = closestGoalOrCoin()
-
-    openNodes = [playerPosition]
-    closeNodes = []
-
-    #innitilising node propperties
-    playerPosition.c = 0                                        #starting cost is 0 (the actual cost)
-    playerPosition.h = manhatten(playerPosition, coinPosition)  #huristic, estimate to goal
-    playerPosition.f = playerPosition.g + playerPosition.h      #total cost estimate
-    playerPosition.parent = null 
-
-    while openNodes != null:
-    
-
-        return path
-
-"""

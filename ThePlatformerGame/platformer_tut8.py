@@ -244,6 +244,8 @@ class platformerEnv:
 		score = 0
 		self.prevDistance = 1
 		self.world = self.reset_level()
+
+		self.start_time = pygame.time.get_ticks()
 		
 		
 		
@@ -258,32 +260,35 @@ class platformerEnv:
 		# Translate the given number corresponding to an action, and make subsequent movement.
 		self.game_over = self.player.update(action, self.world, self.game_over)
 		
+		# If Timeout Kill Player
+		timePassed = (pygame.time.get_ticks() - self.start_time) / 1000
+		if timePassed > 25:
+			self.game_over = -1
+
+
 		# For calculating reward
 		# Starts at -0.5 to incentivise taking less time
 		reward = -0.5
 		# incentivise getting closer to goal/coin
-		if self.prevDistance < self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
-			reward += 3
+		if self.prevDistance > self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
+			reward += 4
 		else:
-			reward -= 3
+			reward -= 4
 		# If player has died
 		if self.game_over == -1:
-				reward-=100
+			reward-=1000
 		# If player reaches wins
 		if self.game_over == 1:
-			reward+=100
+			reward+=1000
 		# If player reaches coin (checkpoint)
 		if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
-			# Update Agent reward
-			reward += 50
 			# update on screen score
 			score += 1
+			# Update Agent reward
+			reward += 50
 		# Deincentivise looking at a wall
 		if self.player.getHeight() == 3:
-			score -=5
-
-		
-		
+			reward -= 5		
 			
 		# Check game is over (Win or Lose)
 		terminated = False
@@ -397,14 +402,13 @@ class Player():
 		1: go left and up
 		2: go right
 		3: go right and up
-		4. go up
-		5: do nothing
+		4: do nothing
 		"""
 		if game_over == 0:
 			# Use AI actions for inputs
 			if (action<6):
-				# AI jumping with varients (up left, up right and staight up)
-				if (action==1 or action==3 or action==4) and self.jumped == False and self.in_air == False:
+				# AI jumping with varients (up left, up right)
+				if (action==1 or action==3) and self.jumped == False and self.in_air == False:
 					self.vel_y = -15
 					self.jumped = True
 				# Reset jump when not jumping
@@ -598,7 +602,7 @@ class Player():
 
 		#CHECKS BELOW US
 
-		if Terrain == 0 or Terrain == 2 or Terrain == 3: #if a air, enemy or objective   
+		if Terrain == 0 or Terrain == 2 or Terrain == 3: #if an air, enemy or objective   
 			for i in range (1,4):
 				yCord += 1 #add 1 to height to check tile above
 				height = (-i) #set height to the -index of the loop
