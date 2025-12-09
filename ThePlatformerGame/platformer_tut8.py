@@ -234,47 +234,75 @@ class platformerEnv:
 		# Return the initial state of the game and an empty info dict
 		return self.get_state(), {}
 
-	# AI takes action and returns new state and reward associated
+	
+		# AI takes action and returns new state and reward associated
 	def step(self, action):
-		# Handle Pygame events (keep window from freezing)
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
 
-		# Translate the given number corresponding to an action, and subsequent movement.
+		# Translate the given number corresponding to an action, and make subsequent movement.
 		self.game_over = self.player.update(self.game_over, action, self.world)
 		
-		# Calculate reward
-		reward = 0
-
-		# Incentivises taking less time
-		reward -= -0.2
-		
+		# For calculating reward
+		# Starts at -0.2 to incentivise taking less time
+		reward = -0.2
 		# If player has died
 		if self.game_over == -1:
 				reward-=100
-				
 		# If player reaches wins
 		if self.game_over == 1:
 			reward+=100
-				
 		# If player reaches coin (checkpoint)
 		if pygame.sprite.spritecollide(self.player, self.coin_group, True):
+			# Update Agent reward
 			reward =+ 5 
+			# update on screen score
+			score += 1
 			
-		
 		# Check game is over (Win or Lose)
 		terminated = False
 		if (self.game_over == -1 or self.game_over == 1):
 			terminated = True
 
-		# Draws Game. can remove to improve performance
-		self.screen.fill((0,0,0))
-		self.player.draw(self.screen)
-		pygame.display.flip()
+		# Update Screen
+		screen.blit(bg_img, (0, 0))
+		screen.blit(sun_img, (100, 100))
+		platformE.world.draw()
+
+		# Handle Pygame events (keep window from freezing)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+
+		if self.gameWon >= 1:
+			current_time = platformE.wonTime
+		else:
+			current_time = pygame.time.get_ticks() - self.start_time
+
+		# Update timing variables and screen
+		seconds = current_time // 1000
+		milliseconds = current_time % 1000
+		timer_text = f"Time: {seconds}.{milliseconds:03d}"
+		self.draw_text(' X ' + str(score), font_score, black, ((tile_size-5)*scale), (8*scale))
+		self.draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
+		# Move enemies
+		self.world.blob_group.update()
+			
+		# Update sprites
+		self.world.blob_group.draw(screen)
+		self.world.lava_group.draw(screen)
+		self.world.coin_group.draw(screen)
+		self.world.exit_group.draw(screen)
+
+		# update tick
+		clock.tick(fps)
+		platformE.frame += 1
+		pygame.display.update()
+
 
 		# Return new observation given new state, reward calculated and game over
 		return self.get_state(), reward, terminated, {}
+		
+		#if platformE.frame % 20 == 0:
+		#	platformE.d14Vector()
 
 	# Returns observation of current state
 	def get_state(self):
