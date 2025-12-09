@@ -90,6 +90,7 @@ class platformerEnv:
 		self.frame = 0
 		self.game_over = 0
 		self.prevDistance = 1
+		self.lastX = self.player.rect.x
 	
 	# Function to draw text on screen
 	def draw_text(self, text, font, text_col, x, y):
@@ -245,6 +246,7 @@ class platformerEnv:
 		score = 0
 		self.prevDistance = 1
 		self.world = self.reset_level()
+		self.lastX = self.player.rect.x
 
 		self.start_time = pygame.time.get_ticks()
 		
@@ -270,31 +272,76 @@ class platformerEnv:
 		# For calculating reward
 		# Starts at -0.5 to incentivise taking less time
 		reward = -0.5
+
+		# Decentivise running into lava
+		# When faced with lava
+		if self.player.getHeight() == -3:
+			isRushingLeft = (self.player.direction == -1 and action == 0)
+			isRushingRight = (self.player.direction == 1 and action == 2)
+
+			if isRushingLeft or isRushingRight:
+				reward -= 200.0
+
 		# incentivise getting closer to goal/coin
 		if self.prevDistance > self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
-			reward += 4
+			reward += 2
 		else:
-			reward -= 4
+			reward -= 1
 		# If player has died
 		if self.game_over == -1:
 			reward-=1000
 		# If player reaches wins
 		if self.game_over == 1:
 			reward+=1000
+		#print (self.player.getHeight())
 		# If player reaches coin (checkpoint)
 		if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
 			# update on screen score
 			score += 1
 			# Update Agent reward
-			reward += 50
+			reward += 500
+
 		# Deincentivise looking at a wall
-		if self.player.getHeight() == 3:
-			reward -= 5		
-			
+		# If looking at a wall and facing left
+		if self.player.getHeight() == 3 and self.player.direction == -1:
+			# If action is going towards the wall
+			if action in [0,1]:
+				reward-=40
+			else:
+				reward+=45
+
+		# If looking at a wall and facing right
+		elif self.player.getHeight() == 3 and self.player.direction == 1:
+			# If action is going towards the wall
+			if action in [2,3]:
+				reward-=40
+			else:
+				reward+=5
+
+
+		# if jumping
+		if action in [1, 3]:
+			# And on ground
+			if self.player.in_air == False:
+				currentRelativeHeight = self.player.getHeight()
+
+				# reward jumping over a gap or small blocks
+				if currentRelativeHeight in [1, -3]: 
+					reward += 30.0
+
+				else:
+					reward -= 30.0 
+
+		if self.player.getHeight() == 1:
+			if action in [2,4]:
+				reward -= 5.0 
+		
+		
 		# Check game is over (Win or Lose)
 		terminated = False
 		if (self.game_over == -1 or self.game_over == 1):
 			terminated = True
+
 
 		# Update Screen
 		screen.blit(bg_img, (0, 0))
