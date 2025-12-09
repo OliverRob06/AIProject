@@ -28,8 +28,13 @@ def terrain_ai(platform_env):
 	height = getTerrainInFront(player)
 
 	slimeD, slimeX = getClosestEnemyDistance(platform_env, player)
-	
+	print("SLIME DISTANCE: ", slimeD)
+
+	# Check if too close to slime - if so, don't move towards it
+
+
 	# same logic as your terrain function uses
+
 	if player.direction == 1:  # facing right
 		if height==-1:
 			return 2
@@ -57,7 +62,20 @@ def terrain_ai(platform_env):
 			return 1
 		return 5  # Default fallback
 	
-	return 5
+	if slimeD < 65:
+		print("AVOID SLIME - TOO CLOSE")
+		# Don't move in the slime's direction
+		if slimeX < player.rect.centerx:  # Slime is to the left
+			if player.direction == -1:  # Player wants to go left (towards slime)
+				if player.in_air:
+					return 1  # Allow jumping over slime
+				return 0  # Stay idle
+		else:  # Slime is to the right
+			if player.direction == 1:  # Player wants to go right (towards slime)
+				if player.in_air:
+					return 3  # Allow jumping over slime
+				return 2  # Stay idle
+	
 
 def getTerrainInFront(player):
 	# Player position
@@ -87,8 +105,7 @@ def getTerrainInFront(player):
 		Height = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
 		return Height
 
-	# gap detected
-	print("PIT AHEAD")	
+	
 	pixelsToCheckx = xPos + 25
 
 	# Second pit check, closer to player
