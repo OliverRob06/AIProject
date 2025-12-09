@@ -25,6 +25,16 @@ def terrain_ai(platform_env):
     # 👇 Call our duplicated terrain check
     height = getTerrainInFront(player)
 
+    slimeD = getClosestEnemyDistance(platform_env, player.rect.x, player.rect.y)
+
+    if slimeD < 40:
+        if player.direction == 1:
+            return 3
+        elif player.direction == -1:
+            return 1
+
+
+
     # same logic as your terrain function uses
     if player.direction == 1:  # facing right
         if height==-1:
@@ -159,3 +169,14 @@ def closest_sprite(player, sprites):
             closest = s
     return closest
 
+
+def getClosestEnemyDistance(platform_env, playerX, playerY):
+	minDistance = float('inf')
+	for enemy in platform_env.world.blob_group:
+		enemyX = enemy.rect.centerx
+		enemyY = enemy.rect.centery
+		#Slime height = 52, player height = 80
+		distance = ((enemyX - playerX +45) ** 2 + ((enemyY+52) - (playerY+80)) ** 2) ** 0.5
+		if distance < minDistance:
+			minDistance = distance
+	return minDistance
