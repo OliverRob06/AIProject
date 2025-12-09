@@ -17,65 +17,87 @@ def terrain_ai(platform_env):
 	exits = list(platform_env.world.exit_group)
 	target = closest_sprite(player, coins) if coins else closest_sprite(player, exits)
 
-	dx = target.rect.centerx - player.rect.centerx
-	dy = target.rect.centery - player.rect.centery
-
-
-	# Set direction before checking terrain
-	player.direction = 1 if dx > 0 else -1
-
+	# Decide direction toward closest target (coin or exit)
+	if target:
+		if target.rect.centerx > player.rect.centerx:
+			playerDir = 1   # target is to the right
+		else:
+			playerDir = -1  # target is to the left
+	else:
+		playerDir = player.direction  # fallback when no target found
 	# 👇 Call our duplicated terrain check
 	height = getTerrainInFront(player)
 
-	slimeD, slimeX = getClosestEnemyDistance(platform_env, player)
-	print("SLIME DISTANCE: ", slimeD)
+	slimeD, slimeX, slime_direction = getClosestEnemyDistance(platform_env, player)
 
-	# Check if too close to slime - if so, don't move towards it
+	slime_moving_toward_player = False
+	slime_moving_away_from_player = False
 
+	
+	if slimeD <= 100:
 
-	# same logic as your terrain function uses
+		# Slime moving right AND slime is left of player = moving toward
+		if slime_direction == 1 and slimeX < player.rect.centerx:
+			slime_moving_toward_player = True
 
-	if player.direction == 1:  # facing right
+		# Slime moving left AND slime is right of player = moving toward  
+		if slime_direction == -1 and slimeX > player.rect.centerx:
+			slime_moving_toward_player = True
+
+		# Slime moving right AND slime is right of player = moving away
+		if slime_direction == 1 and slimeX > player.rect.centerx:
+			slime_moving_away_from_player = True
+
+		# Slime moving left AND slime is left of player = moving away
+		if slime_direction == -1 and slimeX < player.rect.centerx:
+			slime_moving_away_from_player = True
+
+		# React to slimes moving toward us
+		if slime_moving_toward_player and slimeD <= 65:
+			print(f"SLIME MOVING TOWARD: {slimeD}px, jumping away!")
+			if slimeX < player.rect.centerx:  # slime is left
+				return 3  # Right + Jump
+			else:  # slime is right
+				return 1  # Left + Jump
+
+		# React to slimes moving away: maintain distance / move opposite
+		if slime_moving_away_from_player and slimeD <= 65:
+			print(f"SLIME MOVING AWAY: {slimeD}px, keeping distance!")
+			if slimeX > player.rect.centerx:  # slime is left
+				return 0  # move left away
+			else:  # slime is right
+				return 2  # move right away
+			
+
+	# For slimes not moving or farther than 100px, continue normal terrain logic
+
+	print(slime_moving_toward_player)
+	if playerDir == 1:  # facing right
 		if height==-1:
 			return 2
 		if height==-2:
 			return 2
 		if height==-3:
 			return 3
-
 		if height==1:
 			return 3
 		if height==2:
 			return 3
 		return 5  # Default fallback
-	elif player.direction == -1: # facing left
+	elif playerDir == -1: # facing left
 		if height==-1:
 			return 0
 		if height==-2:
 			return 0
 		if height==-3:
 			return 1
-
 		if height==1:
 			return 1
 		if height==2:
 			return 1
 		return 5  # Default fallback
-	
-	if slimeD < 65:
-		print("AVOID SLIME - TOO CLOSE")
-		# Don't move in the slime's direction
-		if slimeX < player.rect.centerx:  # Slime is to the left
-			if player.direction == -1:  # Player wants to go left (towards slime)
-				if player.in_air:
-					return 1  # Allow jumping over slime
-				return 0  # Stay idle
-		else:  # Slime is to the right
-			if player.direction == 1:  # Player wants to go right (towards slime)
-				if player.in_air:
-					return 3  # Allow jumping over slime
-				return 2  # Stay idle
-	
+	return 5  # Default fallback
+
 
 def getTerrainInFront(player):
 	# Player position
@@ -196,14 +218,23 @@ def closest_sprite(player, sprites):
 
 def getClosestEnemyDistance(platform_env, player):
 	playerX = player.rect.centerx
-	playerY = player.rect.centery 
+	playerY = player.rect.y+55
 	minDistance = float('inf')
+	closestEnemyX = playerX
+	closestSlimeDirection = None
+	
 	for enemy in platform_env.world.blob_group:
 		enemyX = enemy.rect.centerx
-		enemyY = enemy.rect.centery
+		enemyY = enemy.rect.y+12
 		#Slime height = 52, player height = 80
 		distance = ((enemyX - playerX) ** 2 + ((enemyY) - (playerY)) ** 2) ** 0.5
 		if distance < minDistance:
 			minDistance = distance
-
-	return minDistance , enemyX
+			closestEnemyX = enemyX
+			# Get direction of the CLOSEST slime
+			if hasattr(enemy, 'move_direction'):
+				closestSlimeDirection = enemy.move_direction
+			else:
+				closestSlimeDirection = 1  # Default direction
+	
+	return minDistance, closestEnemyX, closestSlimeDirection
