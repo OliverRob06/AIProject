@@ -38,18 +38,18 @@ exit_img = pygame.image.load('ThePlatformerGame/img/exit_btn.png')
 win_img = pygame.image.load('ThePlatformerGame/img/youwin.png')
 #dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
 world_data = [
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 8, 0, 0, 0, 2, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1], 
-[1, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 1, 1], 
-[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 2, 1, 1], 
-[1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 6, 6, 2, 2, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 8, 0, 0, 2, 2, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1], 
+[1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
+[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 7, 2, 2, 1, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 6, 6, 2, 2, 1, 1, 1, 1], 
 [1, 0, 0, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
-[1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 2, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 1, 0, 7, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 1], 
-[1, 1, 2, 2, 0, 0, 3, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 1], 
+[1, 1, 2, 2, 0, 0, 0, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 1], 
 [1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 7, 1], 
 [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
@@ -356,7 +356,7 @@ class Player():
 		"""
 		if game_over == 0:
 			# Use AI actions for inputs
-			if (action<10):
+			if (action<6):
 				# AI jumping with varients (up left, up right and staight up)
 				if (action==1 or action==3 or action==4) and self.jumped == False and self.in_air == False:
 					self.vel_y = -15
@@ -822,8 +822,19 @@ while run:
 		platformE.world.lava_group.draw(screen)
 		platformE.world.coin_group.draw(screen)
 		platformE.world.exit_group.draw(screen)
-		platformE.game_over = platformE.player.update(10,platformE.world,platformE.game_over)
 		#platformE.player.getTerrainInFront()
+
+		# Use AI or player control based on selected mode
+		if use_ai:
+    		# Get next AI action from ai.py
+			from ai_pathfinding import terrain_ai
+			action = terrain_ai(platformE)
+			
+		else:
+			action = 10  # Use 10 to indicate player control
+		
+		print("AI Action:", action)
+		platformE.game_over = platformE.player.update(action, platformE.world, platformE.game_over)
 
 		#if player has died
 		if platformE.game_over == -1:
