@@ -801,109 +801,84 @@ class Exit(pygame.sprite.Sprite):
 		self.rect.y = y
 
 
-run = True
-platformE = platformerEnv()
-
-# Choice menu
-print("=" * 50)
-print("PLATFORMER GAME - MODE SELECTION")
-print("=" * 50)
-print("1. Player Control (Use Arrow Keys & Space)")
-print("2. AI Pathfinding (Watch AI complete level)")
-print("=" * 50)
 
 
-mode = None
-while mode not in [1, 2]:
-	try:
-		mode = int(input("Select mode (1 or 2): "))
-		if mode not in [1, 2]:
-			print("Invalid choice. Please enter 1 or 2.")
-	except ValueError:
-		print("Please enter a valid number (1 or 2).")
+def humanOrPathfind(use_ai):
+	run = True
+	platformE = platformerEnv()
 
-if mode == 1:
-	use_ai = False
-	print("\nStarting in PLAYER CONTROL mode...")
-else:
-	use_ai = True
-	print("\nStarting in AI PATHFINDING mode...")
-	print("Watch as the AI finds and follows the optimal path to the goal!")
 
-# Initialize AI variables
-ai_path = []
-ai_path_update_counter = 0
+	# Initialize AI variables
+	while run:
 
-while run:
+		global score
 
-	
+		clock.tick(fps)
 
-	clock.tick(fps)
-
-	screen.blit(bg_img, (0, 0))
-	screen.blit(sun_img, (100, 100))
-	platformE.world.draw()
-	
-	if platformE.game_over == 0:
-		if platformE.gameWon >= 1:
-			current_time = platformE.wonTime
-
-		current_time = pygame.time.get_ticks() - platformE.start_time
-		seconds = current_time // 1000
-		milliseconds = current_time % 1000
-		timer_text = f"Time: {seconds}.{milliseconds:03d}"
-
-		platformE.draw_text(' X ' + str(score), font_score, black, ((tile_size-5)*scale), (8*scale))
-		platformE.draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
-
-		platformE.world.blob_group.update()
-		#update score
-		#check if a coin has been collected
-		if pygame.sprite.spritecollide(platformE.player, platformE.world.coin_group, True):
-			score += 1
-			
-		platformE.world.blob_group.draw(screen)
-		platformE.world.lava_group.draw(screen)
-		platformE.world.coin_group.draw(screen)
-		platformE.world.exit_group.draw(screen)
-		#platformE.player.getTerrainInFront()
-
-		# Use AI or player control based on selected mode
-		if use_ai:
-    		# Get next AI action from ai.py
-			from ai_pathfinding import terrain_ai
-			action = terrain_ai(platformE)
-			
-		else:
-			action = 10  # Use 10 to indicate player control
+		screen.blit(bg_img, (0, 0))
+		screen.blit(sun_img, (100, 100))
+		platformE.world.draw()
 		
-		#print("AI Action:", action)
-		platformE.game_over = platformE.player.update(action, platformE.world, platformE.game_over)
+		if platformE.game_over == 0:
+			if platformE.gameWon >= 1:
+				current_time = platformE.wonTime
 
-		#if player has died
-		if platformE.game_over == -1:
+			current_time = pygame.time.get_ticks() - platformE.start_time
+			seconds = current_time // 1000
+			milliseconds = current_time % 1000
+			timer_text = f"Time: {seconds}.{milliseconds:03d}"
+
+			platformE.draw_text(' X ' + str(score), font_score, black, ((tile_size-5)*scale), (8*scale))
+			platformE.draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
+
+			platformE.world.blob_group.update()
+			#update score
+			#check if a coin has been collected
+			if pygame.sprite.spritecollide(platformE.player, platformE.world.coin_group, True):
+				score += 1
+				
+			platformE.world.blob_group.draw(screen)
+			platformE.world.lava_group.draw(screen)
+			platformE.world.coin_group.draw(screen)
+			platformE.world.exit_group.draw(screen)
+			#platformE.player.getTerrainInFront()
+
+			# Use AI or player control based on selected mode
+			if use_ai:
+				# Get next AI action from ai.py
+				from ai_pathfinding import terrain_ai
+				action = terrain_ai(platformE)
+				
+			else:
+				action = 10  # Use 10 to indicate player control
+			
+			#print("AI Action:", action)
+			platformE.game_over = platformE.player.update(action, platformE.world, platformE.game_over)
+
+			#if player has died
+			if platformE.game_over == -1:
+					platformE.player.reset()
+					platformE.game_over = 0
+					score = 0
+					platformE.world = platformE.reset_level()
+					
+			#if player reaches exit
+			if platformE.game_over == 1:
 				platformE.player.reset()
 				platformE.game_over = 0
 				score = 0
+				print("Level Complete! Time taken:", seconds, "seconds and", milliseconds, "milliseconds")
+				platformE.start_time = pygame.time.get_ticks()
+				platformE.gameWon += 1
 				platformE.world = platformE.reset_level()
 				
-		#if player reaches exit
-		if platformE.game_over == 1:
-			platformE.player.reset()
-			platformE.game_over = 0
-			score = 0
-			print("Level Complete! Time taken:", seconds, "seconds and", milliseconds, "milliseconds")
-			platformE.start_time = pygame.time.get_ticks()
-			platformE.gameWon += 1
-			platformE.world = platformE.reset_level()
-			
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			run = False
-	
-	platformE.d14Vector()
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				run = False
+		
+		platformE.d14Vector()
 
-	platformE.frame += 1
-	pygame.display.update()
+		platformE.frame += 1
+		pygame.display.update()
 
-pygame.quit()
+	pygame.quit()
