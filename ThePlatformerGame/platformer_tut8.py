@@ -596,7 +596,7 @@ class Player():
 
 		#CHECKS BELOW US
 
-		if Terrain == 0 or Terrain == 2 or Terrain == 3: #if a air, enemy or objective   
+		if Terrain == 0 or Terrain == 2 or Terrain == 3: #if an air, enemy or objective   
 			for i in range (1,4):
 				yCord += 1 #add 1 to height to check tile above
 				height = (-i) #set height to the -index of the loop
