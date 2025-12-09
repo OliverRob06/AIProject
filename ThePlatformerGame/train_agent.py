@@ -16,11 +16,30 @@ N_TRIALS = 20
 REWARD_THRESHOLD = 1500 
 PRINT_INTERVAL = 10
 
-LEARNING_RATE = 0.003
+LEARNING_RATE = 0.003 # 0.003
 LEARNING_RATE_BOOST = 0.006
 MAX_BOOST_EPOCH = 1200
 
 
+def manualSaveCheck(policy):
+    # Checks for S Keypress
+    import pygame
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            import sys
+            import torch
+            pygame.quit()
+            sys.exit()
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                 # save the learned policy
+                for param in policy.state_dict():
+                    print(param, "\t", policy.state_dict()[param].size())
+
+                torch.save(policy.state_dict(), './policy.pt')
+                return True  # Signal that a save occurred
+    return False
 
 def calculate_stepwise_returns(rewards, discount_factor):
     returns = []
@@ -101,7 +120,7 @@ def agentStart():
 
     for episode in range(1, MAX_EPOCHS+1):
         episode_return, stepwise_returns, log_prob_actions = forward_pass(env, policy, DISCOUNT_FACTOR)
-
+        manualSaveCheck(policy)
         if episode_return > 0 and episode < MAX_BOOST_EPOCH:
             print(f'Boosting learning rate at episode {episode:3} with score {episode_return:5.1f}!')
             optimizer.param_groups[0]['lr'] = LEARNING_RATE_BOOST 

@@ -271,28 +271,25 @@ class platformerEnv:
 		# Starts at -0.5 to incentivise taking less time
 		reward = -0.5
 		# incentivise getting closer to goal/coin
-		if self.prevDistance < self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
-			reward += 3
+		if self.prevDistance > self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
+			reward += 4
 		else:
-			reward -= 3
+			reward -= 4
 		# If player has died
 		if self.game_over == -1:
-				reward-=1000
+			reward-=1000
 		# If player reaches wins
 		if self.game_over == 1:
 			reward+=1000
 		# If player reaches coin (checkpoint)
 		if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
-			# Update Agent reward
-			reward += 50
 			# update on screen score
 			score += 1
+			# Update Agent reward
+			reward += 50
 		# Deincentivise looking at a wall
 		if self.player.getHeight() == 3:
-			reward -=1			
-
-		
-		
+			reward -= 5		
 			
 		# Check game is over (Win or Lose)
 		terminated = False
@@ -406,14 +403,13 @@ class Player():
 		1: go left and up
 		2: go right
 		3: go right and up
-		4. go up
-		5: do nothing
+		4: do nothing
 		"""
 		if game_over == 0:
 			# Use AI actions for inputs
 			if (action<6):
-				# AI jumping with varients (up left, up right and staight up)
-				if (action==1 or action==3 or action==4) and self.jumped == False and self.in_air == False:
+				# AI jumping with varients (up left, up right)
+				if (action==1 or action==3) and self.jumped == False and self.in_air == False:
 					self.vel_y = -15
 					self.jumped = True
 				# Reset jump when not jumping

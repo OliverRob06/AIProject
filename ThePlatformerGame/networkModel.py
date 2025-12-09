@@ -11,7 +11,7 @@ class Network(nn.Module):
         # Dropout will be set to 0.2, depending on underfitting or overfitting this may be altered.
 
         self.layer1 = nn.Linear(7, 128)
-        self.layer2 = nn.Linear(128, 6)
+        self.layer2 = nn.Linear(128, 5)
         self.dropout = nn.Dropout(0.2)
 
     # Top level traversing data through NN
@@ -21,7 +21,7 @@ class Network(nn.Module):
         x = self.layer1(x) # Move the data from the input layer to the hidden layer
         x = self.dropout(x) # Applies dropout to nodes
         x = nnf.relu(x) # Introduces non-linearity. Forces -ve values to be exactly 0.
-        x = self.layer2(x) # Move the data from the hidden layer (128) to the output layer (6).
-        x = nnf.softmax(x, dim = -1) # Turns the output layer (6) into (6) probabilities all adding up to 1
-        return x # returns 6 probabilities.
+        x = self.layer2(x) # Move the data from the hidden layer (128) to the output layer (5).
+        x = nnf.softmax(x, dim = -1) # Turns the output layer (5) into (5) probabilities all adding up to 1
+        return x # returns 5 probabilities.
 
