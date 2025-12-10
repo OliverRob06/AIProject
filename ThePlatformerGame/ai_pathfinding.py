@@ -1,18 +1,7 @@
 import math
 
-
-
-## todo: when in air only input the direct moving instead of the direction with jump
-
-
-
-
-
 # Action mapping:
 # 0 left, 1 left+jump, 2 right, 3 right+jump, 4 up, 5 idle
-
-LOOKAHEAD = 1  # just check one tile ahead like your system
-
 
 def terrain_ai(platform_env):
 	global world_data
@@ -23,6 +12,7 @@ def terrain_ai(platform_env):
 	# Get target (coin or exit)
 	coins = list(platform_env.world.coin_group)
 	exits = list(platform_env.world.exit_group)
+
 	target = closest_sprite(player, coins) if coins else closest_sprite(player, exits)
 
 	# Decide direction toward closest target (coin or exit)
@@ -36,8 +26,10 @@ def terrain_ai(platform_env):
 	# 👇 Call our duplicated terrain check
 	height = getTerrainInFront(player)
 
+	# get slime distance x and direction
 	slimeD, slimeX, slime_direction = getClosestEnemyDistance(platform_env, player)
 
+	# initialize slime movement relative to player
 	slime_moving_toward_player = False
 	slime_moving_away_from_player = False
 
@@ -63,9 +55,15 @@ def terrain_ai(platform_env):
 		# React to slimes moving toward us
 		if slime_moving_toward_player and slimeD <= 65:
 			if slimeX < player.rect.centerx:  # slime is left
-				return 3  # Right + Jump
+				if playerDir == 1:  # facing right
+					return 2
+				else:
+					return 3  # Right + Jump
 			else:  # slime is right
-				return 1  # Left + Jump
+				if playerDir == -1:  # facing left
+					return 0
+				else:
+					return 1  # Left + Jump
 
 		# React to slimes moving away: maintain distance / move opposite
 		if slime_moving_away_from_player and slimeD <= 65:
@@ -78,32 +76,54 @@ def terrain_ai(platform_env):
 	# For slimes not moving or farther than 100px, continue normal terrain logic
 
 	if playerDir == 1:  # facing right
-		#gap
-		if height==-1:
+		# if there is a a block the player can walk/fall onto move normally
+		if height==-1 or height==-2:
 			return 2
-		if height==-2:
-			return 2
+		
+		# if the block in front is a pit or lava jump
 		if height==-3:
-			return 3
-		#jump
-		if height==1:
-			return 3
-		if height==2:
-			return 3
+			# if the player is already in air continue moving forward
+			if player.in_air:
+				return 2
+			
+			# else jump
+			else:
+				return 3
+		#if the block is required to be jumped onto
+		if height==1 or height==2:
+			# if the player is already in air continue moving forward
+			if player.in_air:
+				return 2
+			
+			# else jump
+			else:
+				return 3
 		return 5  # Default fallback
+	
 	elif playerDir == -1: # facing left
-		#gap
-		if height==-1:
+		# if there is a a block the player can walk/fall onto move normally
+		if height==-1 or height==-2:
 			return 0
-		if height==-2:
-			return 0
+		
+		# if the block in front is a pit or lava jump
 		if height==-3:
-			return 1
-		#jump
-		if height==1:
-			return 1
-		if height==2:
-			return 1
+			# if the player is already in air continue moving forward
+			if player.in_air:
+				return 0
+			
+			# else jump
+			else:
+				return 1
+			
+		# if the block is required to be jumped onto
+		if height==1 or height==2:
+			# if the player is already in air continue moving forward
+			if player.in_air:
+				return 0
+			
+			# else jump
+			else:
+				return 1
 		return 5  # Default fallback
 	return 5  # Default fallback
 
@@ -113,97 +133,99 @@ def getTerrainInFront(player):
 	xPos = player.rect.x
 	yPos = player.rect.y
 
+	# Pixels to check on the character's feet 
 	pixelsToCheckY = yPos + 79
 	
-	#facing left
+	#make the pixel to check slightly in front of the player
+	# facing left
 	if player.direction == -1:
 		pixelsToCheckx = xPos - 10
-	#facing right
+	# facing right
 	else:
 		pixelsToCheckx = xPos + 50
 
+	# initial check the block 
 	blockCheck = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
 
-	# if no gap detected
+	# if the block not a gap to jump
 	if blockCheck != -3:
-		# facing left
-		if player.direction == -1:   
-			pixelsToCheckx = xPos - 10
-		# facing right
-		elif player.direction == 1: 
-			pixelsToCheckx = xPos + 50
+		return blockCheck
 
-		Height = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
-		return Height
-
-	
+	# if the block is a gap set teh pixel to check slight closer so that the player jumps later
 	pixelsToCheckx = xPos + 25
 
 	# Second pit check, closer to player
 	Height = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
 	return Height
 
-	#return relative height
-	#3 big wall
-	#2 2 block
-	#1 1 block
-	#-1 next block along
-	#-2 1 block gap
-	#-3 2 block gap
-	
-
 def checkTerrain(player, pixelsToCheckx, pixelsToCheckY,world_data):
 	height = 0
 	tileCount = 20
 	
-	#convert pixels coordinates -> tile coords
+	# convert pixels coordinates -> tile coords
 	xCord = math.floor(pixelsToCheckx/50)
 	yCord = math.floor(pixelsToCheckY/50)
-
 
 	#boundary protection
 	if xCord <0 or yCord<0 or xCord >=tileCount or yCord>=tileCount:
 		return 5
 	
+	# the tile in front of us
+	tileData = world_data[yCord][xCord] 
+	# get Terrain Type
+	Terrain = getTerrain(tileData) 
 
-	tileData = world_data[yCord][xCord] #the tile in front of us
-	Terrain = getTerrain(tileData) #get Terrain Type
-
-
-	#CHECKS BELOW US
-
-	if Terrain == 0 or Terrain == 2 or Terrain == 3: #if a air, enemy or objective   
+	# check the block in front of us
+	# if the block is air, enemy spawn or coin position, move down a block to check
+	if Terrain == 0 or Terrain == 2 or Terrain == 3:    
 		for i in range (1,4):
-			yCord += 1 #add 1 to height to check tile above
-			height = (-i) #set height to the -index of the loop
-			tileData = world_data[yCord][xCord] #get tile data
+			#add 1 to height to check tile above
+			yCord += 1 
+			#set height to the -index of the loop
+			height = (-i) 
+			#get tile data
+			tileData = world_data[yCord][xCord] 
 
-			if getTerrain(world_data[yCord][xCord]) == 1: #get Terrain again
+			#get Terrain again
+			if getTerrain(world_data[yCord][xCord]) == 1: 
 				break
+			#if the tile is lava set height to -3 
 			elif getTerrain(world_data[yCord][xCord]) == 4:
 				height = -3
 				break
 
 	#CHECKS ABOVE US
-
+	# if the block is a dirt block, move up a block to check
 	elif Terrain == 1:
 		for i in range (1,4):
+			# subtract 1 from yCord to check tile above
 			yCord -= 1
+			# set height to the index of the loop
 			height = i
+			# get tile data
 			tileData = world_data[yCord][xCord]
+			
+			#get Terrain again
 			TerrainAbove = getTerrain(tileData)
+			# if the tile above is air, enemy spawn or coin position, stop checking
 			if TerrainAbove == 0 or TerrainAbove == 2 or TerrainAbove == 3:
 				break
 
 	return height
 						
-def getTerrain(tileData):					
+def getTerrain(tileData):
+	# there is a gap needs jumped					
 	if tileData == 0:
-		Terrain = 0 #there is a gap needs jumped
+		# air block
+		Terrain = 0 
+	#there is an enemy spawn or coin position
 	elif tileData == 1 or tileData == 2:
-		Terrain = 1 #there is a block, walk forwards
+		# you can walk on this
+		Terrain = 1 
+	# there is a slime spawn
 	elif tileData == 3:
-		Terrain = 2 #there is slime
+		# 
+		Terrain = 2 
 	elif tileData == 6:
 		Terrain = 4 # there is lava
 	else:
@@ -211,39 +233,62 @@ def getTerrain(tileData):
 
 	return Terrain
 
+# get the disance to the closest sprite in a group
 def closest_sprite(player, sprites):
+	# initialize minimum distance to a large value
 	min_dist = float('inf')
+	# initialize closest sprite to None
 	closest = None
+
+	#for each sprite in the group
 	for s in sprites:
+		# calculate the distance to the player, favouring the x-axis
 		dist = math.hypot(
 			player.rect.centerx - s.rect.x,
-			(player.rect.centery - s.rect.y)*2,
+			(player.rect.centery - s.rect.y)*10,
 		)
+		# if this distance is less than the minimum distance found so far
 		if dist < min_dist:
+			# update minimum distance and closest sprite
 			min_dist = dist
 			closest = s
+
+	# return the closest sprite found
 	return closest
 
 
 def getClosestEnemyDistance(platform_env, player):
+	# Player position
 	playerX = player.rect.centerx
 	playerY = player.rect.y+55
+
+	# Initialize minimum distance and closest enemy position
 	minDistance = float('inf')
+	# Initialize closest enemy position
 	closestEnemyX = playerX
+	# Initialize closest slime direction
 	closestSlimeDirection = None
 	
+	# For each enemy in the blob group
 	for enemy in platform_env.world.blob_group:
+		# Enemy position
 		enemyX = enemy.rect.centerx
 		enemyY = enemy.rect.y+12
 		#Slime height = 52, player height = 80
+
+		# Calculate distance to player using pythagorean theorem
 		distance = ((enemyX - playerX) ** 2 + ((enemyY) - (playerY)) ** 2) ** 0.5
+		# If this distance is less than the minimum distance found so far
 		if distance < minDistance:
+			# Update minimum distance and closest enemy position
 			minDistance = distance
 			closestEnemyX = enemyX
-			# Get direction of the CLOSEST slime
+
+			# Get direction of the CLOSEST slime if it has a move_direction attribute
 			if hasattr(enemy, 'move_direction'):
 				closestSlimeDirection = enemy.move_direction
 			else:
 				closestSlimeDirection = 1  # Default direction
-	
+
+	# return the minimum distance, closest enemy x position, and closest slime direction
 	return minDistance, closestEnemyX, closestSlimeDirection
