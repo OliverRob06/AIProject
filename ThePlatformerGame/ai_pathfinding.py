@@ -34,10 +34,9 @@ def terrain_ai(platform_env):
 	# initialize slime movement relative to player
 	slime_moving_toward_player = False
 	slime_moving_away_from_player = False
-
 	
+	#if slime is with 65px 
 	if slimeD <= 65:
-
 		# Slime moving right AND slime is left of player = moving toward
 		if slime_direction == 1 and slimeX < player.rect.centerx:
 			slime_moving_toward_player = True
@@ -74,9 +73,7 @@ def terrain_ai(platform_env):
 			else:  # slime is right
 				return 2  # move right away
 			
-
 	# For slimes not moving or farther than 100px, continue normal terrain logic
-
 	if playerDir == 1:  # facing right
 		# if there is a a block the player can walk/fall onto move normally
 		if height==-1 or height==-2:
