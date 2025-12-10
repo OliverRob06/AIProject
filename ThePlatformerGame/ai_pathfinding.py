@@ -7,7 +7,6 @@ def terrain_ai(platform_env):
 	global world_data
 	player = platform_env.player
 	world_data = platform_env.world_data
-	tile_size = platform_env.tile_size
 
 	# Get target (coin or exit)
 	coins = list(platform_env.world.coin_group)
@@ -18,11 +17,14 @@ def terrain_ai(platform_env):
 	# Decide direction toward closest target (coin or exit)
 	if target:
 		if target.rect.centerx > player.rect.centerx:
-			playerDir = 1   # target is to the right
+			# target is to the right
+			playerDir = 1   
 		else:
-			playerDir = -1  # target is to the left
+			# target is to the left
+			playerDir = -1  
 	else:
-		playerDir = player.direction  # fallback when no target found
+		# fallback when no target found
+		playerDir = player.direction  
 	# 👇 Call our duplicated terrain check
 	height = getTerrainInFront(player)
 
