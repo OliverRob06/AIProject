@@ -34,9 +34,6 @@ black = (0, 0,0)
 #load images
 sun_img = pygame.image.load('./ThePlatformerGame/img/sun.png')
 bg_img = pygame.image.load('./ThePlatformerGame/img/sky.png')
-restart_img = pygame.image.load('./ThePlatformerGame/img/restart_btn.png')
-start_img = pygame.image.load('./ThePlatformerGame/img/start_btn.png')
-exit_img = pygame.image.load('./ThePlatformerGame/img/exit_btn.png')
 win_img = pygame.image.load('./ThePlatformerGame/img/youwin.png')
 #dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
 world_data = [
