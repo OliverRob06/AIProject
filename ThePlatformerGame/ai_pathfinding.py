@@ -1,5 +1,13 @@
 import math
 
+
+
+## todo: when in air only input the direct moving instead of the direction with jump
+
+
+
+
+
 # Action mapping:
 # 0 left, 1 left+jump, 2 right, 3 right+jump, 4 up, 5 idle
 
@@ -34,7 +42,7 @@ def terrain_ai(platform_env):
 	slime_moving_away_from_player = False
 
 	
-	if slimeD <= 100:
+	if slimeD <= 65:
 
 		# Slime moving right AND slime is left of player = moving toward
 		if slime_direction == 1 and slimeX < player.rect.centerx:
@@ -54,7 +62,6 @@ def terrain_ai(platform_env):
 
 		# React to slimes moving toward us
 		if slime_moving_toward_player and slimeD <= 65:
-			print(f"SLIME MOVING TOWARD: {slimeD}px, jumping away!")
 			if slimeX < player.rect.centerx:  # slime is left
 				return 3  # Right + Jump
 			else:  # slime is right
@@ -62,7 +69,6 @@ def terrain_ai(platform_env):
 
 		# React to slimes moving away: maintain distance / move opposite
 		if slime_moving_away_from_player and slimeD <= 65:
-			print(f"SLIME MOVING AWAY: {slimeD}px, keeping distance!")
 			if slimeX > player.rect.centerx:  # slime is left
 				return 0  # move left away
 			else:  # slime is right
@@ -71,26 +77,29 @@ def terrain_ai(platform_env):
 
 	# For slimes not moving or farther than 100px, continue normal terrain logic
 
-	print(slime_moving_toward_player)
 	if playerDir == 1:  # facing right
+		#gap
 		if height==-1:
 			return 2
 		if height==-2:
 			return 2
 		if height==-3:
 			return 3
+		#jump
 		if height==1:
 			return 3
 		if height==2:
 			return 3
 		return 5  # Default fallback
 	elif playerDir == -1: # facing left
+		#gap
 		if height==-1:
 			return 0
 		if height==-2:
 			return 0
 		if height==-3:
 			return 1
+		#jump
 		if height==1:
 			return 1
 		if height==2:
@@ -207,8 +216,8 @@ def closest_sprite(player, sprites):
 	closest = None
 	for s in sprites:
 		dist = math.hypot(
-			player.rect.centerx - s.rect.centerx-1,
-			(player.rect.centery - s.rect.centery)*1.5,
+			player.rect.centerx - s.rect.x,
+			(player.rect.centery - s.rect.y)*2,
 		)
 		if dist < min_dist:
 			min_dist = dist
