@@ -584,16 +584,7 @@ class Player():
 
 		
 	def getHeight(self):
-
-		#Terrain States 
-		# GAP = 0
-		# BLOCK = 1
-		# OBSTACLE = 2
-		# Objective = 3
-		# #screen size = 1000px^2
-		#tile size = 50px^2
-		#dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
-		#player coords
+		# Player position
 		xPos = self.rect.x #100 by default
 		yPos = self.rect.y #870 by default
 
@@ -613,79 +604,65 @@ class Player():
 			pixelsToCheckY = yPos+79
 			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
 		
+		#return relative height
 		return Height
 		
 
-	#return relative height
-	#3 big wall
-	#2 2 block
-	#1 1 block
-	#-1 next block along
-	#-2 1 block gap
-	#-3 2 block gap
 	
 
 	def checkTerrain(self, pixelsToCheckx, pixelsToCheckY,world_data):
 		height = 0
 		tileCount = 20
-		
-		#convert pixels coordinates -> tile coords
-		xCord = math.floor(pixelsToCheckx/tile_size)
-		yCord = math.floor(pixelsToCheckY/tile_size)
-
-
+	
+		# convert pixels coordinates -> tile coords
+		xCord = math.floor(pixelsToCheckx/50)
+		yCord = math.floor(pixelsToCheckY/50)
 
 		#boundary protection
 		if xCord <0 or yCord<0 or xCord >=tileCount or yCord>=tileCount:
-			return 0
+			return 5
 		
+		# the tile in front of us
+		tileData = world_data[yCord][xCord] 
+		# get Terrain Type
 
-		tileData = world_data[yCord][xCord] #the tile in front of us
-		Terrain = self.getTerrain(tileData) #get Terrain Type
-
-
-		#CHECKS BELOW US
-
-		if Terrain == 0 or Terrain == 2 or Terrain == 3: #if an air, enemy or objective   
+		# check the block in front of us
+		# if the block is air, enemy spawn or coin position, move down a block to check
+		if tileData == 0 or tileData == 3 or tileData == 7:  
 			for i in range (1,4):
-				yCord += 1 #add 1 to height to check tile above
-				height = (-i) #set height to the -index of the loop
-				tileData = world_data[yCord][xCord] #get tile data
+				#add 1 to height to check tile above
+				yCord += 1 
+				#set height to the -index of the loop
+				height = (-i) 
+				#get tile data
+				tileData = world_data[yCord][xCord] 
 
-				if self.getTerrain(world_data[yCord][xCord]) == 1: #get Terrain again
+				#get Terrain again
+				if tileData == 1 or tileData == 2: 
 					break
-				elif self.getTerrain(world_data[yCord][xCord]) == 4:
+				#if the tile is lava set height to -3 
+				elif tileData == 6:
 					height = -3
 					break
 
 		#CHECKS ABOVE US
-
-		elif Terrain == 1:
+		# if the block is a dirt block, move up a block to check
+		elif tileData == 1 or tileData == 2:
 			for i in range (1,4):
+				# subtract 1 from yCord to check tile above
 				yCord -= 1
+				# set height to the index of the loop
 				height = i
+				# get tile data
 				tileData = world_data[yCord][xCord]
-				TerrainAbove = self.getTerrain(tileData)
-				if TerrainAbove == 0 or TerrainAbove == 2 or TerrainAbove == 3:
+				
+				#get Terrain again
+				# if the tile above is air, enemy spawn or coin position, stop checking
+				if tileData == 0 or tileData == 3 or tileData == 7:
 					break
 
 		return height
 							
-	def getTerrain(self, tileData):					
-		if tileData == 0:
-			Terrain = 0 #there is a gap needs jumped
-		elif tileData == 1 or tileData == 2:
-			Terrain = 1 #there is a block, walk forwards
-		elif tileData == 3:
-			Terrain = 2 #there is slime
-		elif tileData == 6:
-			Terrain = 4 # there is lava
-		else:
-			Terrain = 3 #there is objective
-
-		return Terrain
-
-
 
 
 	# Reset player position

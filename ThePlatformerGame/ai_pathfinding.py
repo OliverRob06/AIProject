@@ -26,7 +26,7 @@ def terrain_ai(platform_env):
 		# fallback when no target found
 		playerDir = player.direction  
 	# 👇 Call our duplicated terrain check
-	height = getTerrainInFront(player)
+	height = getHeight(player)
 
 	# get slime distance x and direction
 	slimeD, slimeX, slime_direction = getClosestEnemyDistance(platform_env, player)
@@ -127,7 +127,7 @@ def terrain_ai(platform_env):
 	return 5  # Default fallback
 
 
-def getTerrainInFront(player):
+def getHeight(player):
 	# Player position
 	xPos = player.rect.x
 	yPos = player.rect.y
@@ -172,11 +172,10 @@ def checkTerrain(player, pixelsToCheckx, pixelsToCheckY,world_data):
 	# the tile in front of us
 	tileData = world_data[yCord][xCord] 
 	# get Terrain Type
-	Terrain = getTerrain(tileData) 
 
 	# check the block in front of us
 	# if the block is air, enemy spawn or coin position, move down a block to check
-	if Terrain == 0 or Terrain == 2 or Terrain == 3:    
+	if tileData == 0 or tileData == 3 or tileData == 7:  
 		for i in range (1,4):
 			#add 1 to height to check tile above
 			yCord += 1 
@@ -186,16 +185,16 @@ def checkTerrain(player, pixelsToCheckx, pixelsToCheckY,world_data):
 			tileData = world_data[yCord][xCord] 
 
 			#get Terrain again
-			if getTerrain(world_data[yCord][xCord]) == 1: 
+			if tileData == 1 or tileData == 2: 
 				break
 			#if the tile is lava set height to -3 
-			elif getTerrain(world_data[yCord][xCord]) == 4:
+			elif tileData == 6:
 				height = -3
 				break
 
 	#CHECKS ABOVE US
 	# if the block is a dirt block, move up a block to check
-	elif Terrain == 1:
+	elif tileData == 1 or tileData == 2:
 		for i in range (1,4):
 			# subtract 1 from yCord to check tile above
 			yCord -= 1
@@ -205,32 +204,13 @@ def checkTerrain(player, pixelsToCheckx, pixelsToCheckY,world_data):
 			tileData = world_data[yCord][xCord]
 			
 			#get Terrain again
-			TerrainAbove = getTerrain(tileData)
 			# if the tile above is air, enemy spawn or coin position, stop checking
-			if TerrainAbove == 0 or TerrainAbove == 2 or TerrainAbove == 3:
+			if tileData == 0 or tileData == 3 or tileData == 7:
 				break
 
 	return height
 						
-def getTerrain(tileData):
-	# there is a gap needs jumped					
-	if tileData == 0:
-		# air block
-		Terrain = 0 
-	#there is an enemy spawn or coin position
-	elif tileData == 1 or tileData == 2:
-		# you can walk on this
-		Terrain = 1 
-	# there is a slime spawn
-	elif tileData == 3:
-		# 
-		Terrain = 2 
-	elif tileData == 6:
-		Terrain = 4 # there is lava
-	else:
-		Terrain = 3 #there is objective
 
-	return Terrain
 
 # get the disance to the closest sprite in a group
 def closest_sprite(player, sprites):
