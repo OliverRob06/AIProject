@@ -113,7 +113,7 @@ def agentStart():
 
     policy = nm.Network() 
 
-    # policy.load_state_dict(torch.load('./policy.pt', weights_only=True))
+    #policy.load_state_dict(torch.load('./policy.pt', weights_only=True))
     policy.train()
 
     optimizer = opt.Adam(policy.parameters(), lr = LEARNING_RATE)
