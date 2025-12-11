@@ -513,11 +513,11 @@ class platformerEnv:
 		# draw player
 		screen.blit(self.player.image, self.player.rect)
 
-			# Handle Pygame events (keep window from freezing)
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					pygame.quit()
-					sys.exit()
+		# Handle Pygame events (keep window from freezing)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				sys.exit()
 
 		# Calculate time survived
 		if self.gameWon >= 1:
@@ -556,10 +556,10 @@ class platformerEnv:
 			
 			# stop movement in 4 frames if landing or start falling
 			if wasInAir != self.player.in_air:
-				break
+				x = actionOverXFrames
 			wasInAir = self.player.in_air
 			if self.game_over == -1:
-				break
+				x = actionOverXFrames
 		# Return new observation given new state, reward calculated and game over
 		return self.get_state(), reward, terminated, {}
 			
