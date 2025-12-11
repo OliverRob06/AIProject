@@ -787,32 +787,33 @@ class Player():
 		return game_over
 	
 	def getHeight(self):
+		# Player position
+		xPos = self.rect.x
+		yPos = self.rect.y
 
-		#Terrain States 
-		# GAP = 0
-		# BLOCK = 1
-		# OBSTACLE = 2
-		# Objective = 3
-		# #screen size = 1000px^2
-		# tile size = 50px^2
-		# dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
-		# player coords
-		xPos = self.rect.x #100 by default
-		yPos = self.rect.y #870 by default
-
-		#direction player faces
-		if self.direction == -1:  #facing left
-			pixelsToCheckx = xPos-50 #block on left
-			pixelsToCheckY = yPos+79
-			pygame.draw.circle(screen, (255, 0, 0), (pixelsToCheckx, pixelsToCheckY), 50)
-			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
-		else:
-			pixelsToCheckx = xPos+50#block on right
-			pixelsToCheckY = yPos+79
-			pygame.draw.circle(screen, (255, 0, 0), (pixelsToCheckx, pixelsToCheckY), 50)
-			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
+		# Pixels to check on the character's feet 
+		pixelsToCheckY = yPos + 79
 		
-		#return relative height
+		#make the pixel to check slightly in front of the player
+		# facing left
+		if self.direction == -1:
+			pixelsToCheckx = xPos - 10
+		# facing right
+		else:
+			pixelsToCheckx = xPos + 50
+
+		# initial check the block 
+		blockCheck = self.checkTerrain(pixelsToCheckx, pixelsToCheckY, world_data)
+
+		# if the block not a gap to jump
+		if blockCheck != -3:
+			return blockCheck
+
+		# if the block is a gap set teh pixel to check slight closer so that the player jumps later
+		pixelsToCheckx = xPos + 25
+
+		# Second pit check, closer to player
+		Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY, world_data)
 		return Height
 		
 	# check terrain type in front of player and return height of terrain relative to player
