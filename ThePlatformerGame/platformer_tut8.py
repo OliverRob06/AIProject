@@ -243,6 +243,24 @@ class platformerEnv:
 
 		return minDistance
 	
+	# Get distance to closest goal or coin
+	def getClosestGoalOrCoinDistance(self, playerX, playerY):
+		minDistance = float('inf')
+		for coin in self.world.coin_group:
+			coinX = coin.rect.x
+			coinY = coin.rect.y
+			distance = ((coinX - playerX - 40) ** 2 + ((coinY+52) - (playerY+80)) ** 2) ** 0.5
+			if distance < minDistance:
+				minDistance = distance
+		
+		for goal in self.world.exit_group:
+			goalX = goal.rect.x
+			goalY = goal.rect.y
+			distance = ((goalX + 35 - playerX) ** 2 + ((goalY+ - playerY)) ** 2) ** 0.5
+			if distance < minDistance:
+				minDistance = distance
+
+		return minDistance
 	# get the disance to the closest sprite in a group
 	def closest_sprite(self, player, sprites):
 		# initialize minimum distance to a large value
@@ -513,11 +531,11 @@ class platformerEnv:
 		# draw player
 		screen.blit(self.player.image, self.player.rect)
 
-			# Handle Pygame events (keep window from freezing)
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					pygame.quit()
-					sys.exit()
+		# Handle Pygame events (keep window from freezing)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				sys.exit()
 
 		# Calculate time survived
 		if self.gameWon >= 1:
@@ -556,10 +574,10 @@ class platformerEnv:
 			
 			# stop movement in 4 frames if landing or start falling
 			if wasInAir != self.player.in_air:
-				break
+				x = actionOverXFrames
 			wasInAir = self.player.in_air
 			if self.game_over == -1:
-				break
+				x = actionOverXFrames
 		# Return new observation given new state, reward calculated and game over
 		return self.get_state(), reward, terminated, {}
 			
@@ -769,30 +787,33 @@ class Player():
 		return game_over
 	
 	def getHeight(self):
+		# Player position
+		xPos = self.rect.x
+		yPos = self.rect.y
 
-		#Terrain States 
-		# GAP = 0
-		# BLOCK = 1
-		# OBSTACLE = 2
-		# Objective = 3
-		# #screen size = 1000px^2
-		# tile size = 50px^2
-		# dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
-		# player coords
-		xPos = self.rect.x #100 by default
-		yPos = self.rect.y #870 by default
-
-		#direction player faces
-		if self.direction == -1:  #facing left
-			pixelsToCheckx = xPos-50 #block on left
-			pixelsToCheckY = yPos+79
-			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
-		else:
-			pixelsToCheckx = xPos+50#block on right
-			pixelsToCheckY = yPos+79
-			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
+		# Pixels to check on the character's feet 
+		pixelsToCheckY = yPos + 79
 		
-		#return relative height
+		#make the pixel to check slightly in front of the player
+		# facing left
+		if self.direction == -1:
+			pixelsToCheckx = xPos - 10
+		# facing right
+		else:
+			pixelsToCheckx = xPos + 50
+
+		# initial check the block 
+		blockCheck = self.checkTerrain(pixelsToCheckx, pixelsToCheckY, world_data)
+
+		# if the block not a gap to jump
+		if blockCheck != -3:
+			return blockCheck
+
+		# if the block is a gap set teh pixel to check slight closer so that the player jumps later
+		pixelsToCheckx = xPos + 25
+
+		# Second pit check, closer to player
+		Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY, world_data)
 		return Height
 		
 	# check terrain type in front of player and return height of terrain relative to player
