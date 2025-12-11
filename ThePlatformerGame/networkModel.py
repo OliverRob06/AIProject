@@ -5,12 +5,12 @@ class Network(nn.Module):
     def __init__(self):
         super().__init__()
 
-        # 9 is the input dimension, ie number of state space variables
+        # 11 is the input dimension, ie number of state space variables
         # 128 is the number of hidden layers
-        # There are six discrete actions available, so 6 is the size of the output layer
+        # There are six discrete actions available, so 5 is the size of the output layer
         # Dropout will be set to 0.2, depending on underfitting or overfitting this may be altered.
 
-        self.layer1 = nn.Linear(9, 128)
+        self.layer1 = nn.Linear(11, 128)
         self.layer2 = nn.Linear(128, 5)
         self.dropout = nn.Dropout(0.2)
 
