@@ -7,7 +7,7 @@ import sys
 pygame.init()
 pygame.font.init()	
 #						The Environment Global Variables
-scale = 1
+scale = 0.7
 slowerEnemy = False
 clock = pygame.time.Clock()
 fps = 60
@@ -15,7 +15,10 @@ fps = 60
 screen_width = 1000*scale
 screen_height = 1000*scale
 
+render = True
+actionOverXFrames = 5
 show_hitboxes = False
+timeLimit = 10
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Platformer')
@@ -172,6 +175,7 @@ class platformerEnv:
 			pixelsToCheckY = self.player.rect.y+79
 		#print("Pixels to check X: ", pixelsToCheckx)
 		#print("Pixels to check Y: ", pixelsToCheckY)
+		
 
 		#print(Height)
 
@@ -253,138 +257,280 @@ class platformerEnv:
 
 	
 		# AI takes action and returns new state and reward associated
+	
 	def step(self, action):
-
+		global render
 		global score
-		# Translate the given number corresponding to an action, and make subsequent movement.
-		self.game_over = self.player.update(action, self.world, self.game_over)
-		
-		# If Timeout Kill Player
-		timePassed = (pygame.time.get_ticks() - self.start_time) / 1000
-		if timePassed > 25:
-			self.game_over = -1
-
+		global actionOverXFrames
+		global timeLimit
 
 		# For calculating reward
 		# Starts at -0.5 to incentivise taking less time
-		reward = -0.5
+		reward = -0.5*actionOverXFrames
+		wasInAir = self.player.in_air
+		for x in range(actionOverXFrames):
 
-		# Decentivise running into lava
-		# When faced with lava
-		if self.player.getHeight() == -3:
-			isRushingLeft = (self.player.direction == -1 and action == 0)
-			isRushingRight = (self.player.direction == 1 and action == 2)
-
-			if isRushingLeft or isRushingRight:
-				reward -= 200.0
-
-		# incentivise getting closer to goal/coin
-		if self.prevDistance > self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
-			reward += 2
-		else:
-			reward -= 1
-		# If player has died
-		if self.game_over == -1:
-			reward-=1000
-		# If player reaches wins
-		if self.game_over == 1:
-			reward+=1000
-		#print (self.player.getHeight())
-		# If player reaches coin (checkpoint)
-		if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
-			# update on screen score
-			score += 1
-			# Update Agent reward
-			reward += 500
-
-		# Deincentivise looking at a wall
-		# If looking at a wall and facing left
-		if self.player.getHeight() == 3 and self.player.direction == -1:
-			# If action is going towards the wall
-			if action in [0,1]:
-				reward-=40
-			else:
-				reward+=45
-
-		# If looking at a wall and facing right
-		elif self.player.getHeight() == 3 and self.player.direction == 1:
-			# If action is going towards the wall
-			if action in [2,3]:
-				reward-=40
-			else:
-				reward+=5
-
-
-		# if jumping
-		if action in [1, 3]:
-			# And on ground
-			if self.player.in_air == False:
-				currentRelativeHeight = self.player.getHeight()
-
-				# reward jumping over a gap or small blocks
-				if currentRelativeHeight in [1, -3]: 
-					reward += 30.0
-
-				else:
-					reward -= 30.0 
-
-		if self.player.getHeight() == 1:
-			if action in [2,4]:
-				reward -= 5.0 
-		
-		
-		# Check game is over (Win or Lose)
-		terminated = False
-		if (self.game_over == -1 or self.game_over == 1):
-			terminated = True
-
-
-		# Update Screen
-		screen.blit(bg_img, (0, 0))
-		screen.blit(sun_img, (100, 100))
-		self.world.draw()
-
-		screen.blit(self.player.image, self.player.rect)
-
-		# Handle Pygame events (keep window from freezing)
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				sys.exit()
-
-		if self.gameWon >= 1:
-			current_time = self.wonTime
-		else:
-			current_time = pygame.time.get_ticks() - self.start_time
-
-		# Update timing variables and screen
-		seconds = current_time // 1000
-		milliseconds = current_time % 1000
-		timer_text = f"Time: {seconds}.{milliseconds:03d}"
-		self.draw_text(' X ' + str(score), font_score, black, ((tile_size-5)*scale), (8*scale))
-		self.draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
-		# Move enemies
-		self.world.blob_group.update()
+			# Translate the given number corresponding to an action, and make subsequent movement.
+			self.game_over = self.player.update(action, self.world, self.game_over)
 			
-		# Update sprites
-		self.world.blob_group.draw(screen)
-		self.world.lava_group.draw(screen)
-		self.world.coin_group.draw(screen)
-		self.world.exit_group.draw(screen)
+			# If Timeout Kill Player
+			timePassed = (pygame.time.get_ticks() - self.start_time) / 1000
+			if timePassed > timeLimit:
+				self.game_over = -1
 
-		# update tick
-		clock.tick(fps)
-		self.frame += 1
-		pygame.display.update()
 
-		# update prev distance to goal
-		self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+			isDoingNothing = action == 4
+			isMiddair = self.player.in_air
 
+			isFacingLeft = self.player.direction == -1 
+			isFacingRight = self.player.direction == 1 
+
+			isWalkingLeft = action == 0
+			isJumpingLeft = action == 1
+			isWalkingRight = action == 2
+			isJumpingRight = action == 3
+
+			isJumping = action == 1 or action == 3
+
+			curBlock = self.player.getHeight() 
+
+			isFacingWall = curBlock == 3
+			isFacing2BlockHigh = curBlock == 2
+			isFacing1BlockHigh = curBlock == 1
+			isFacingNothing = curBlock == -1
+			isFacing1BlockDrop = curBlock == -2
+			isFacingDropOrLava = curBlock == -3
+			
+			if isFacingLeft:
+
+				if isFacingWall:
+
+					if isWalkingLeft or isJumpingLeft:
+						reward-=5
+					
+					elif isWalkingRight or isJumpingRight:
+						reward+=5
+
+				elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
+					if isMiddair:
+							pass
+					else:
+						if isJumpingLeft:
+							# Jump over
+							reward+=10
+						elif isWalkingLeft:
+							# Waste Movement
+							reward-=20
+						elif isWalkingRight or isJumpingRight:
+							# Retreat/Back Up
+							pass
+
+				elif isFacingNothing:
+
+					if isWalkingLeft:
+						reward+=5
+					else:
+						reward-=5
+
+				
+
+			elif isFacingRight:
+
+				if isFacingWall:
+
+					if isWalkingLeft or isJumpingLeft:
+						reward+=5
+					
+					elif isWalkingRight or isJumpingRight:
+						reward-=5
+
+				elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
+					if isMiddair:
+							pass
+					else:
+						if isJumpingRight:
+							# Jump over
+							reward+=10
+						elif isWalkingRight:
+							# Waste Movement
+							reward-=20
+						elif isWalkingLeft or isJumpingLeft:
+							# Retreat/Back Up
+							pass
+
+				elif isFacingNothing:
+
+					if isWalkingRight:
+						reward+=5
+					else:
+						reward-=5
+			
+			
+			# incentivise getting closer to goal/coin
+			if self.prevDistance > self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
+				reward += 2
+				#print ("rewarded +2 for going to coin")
+			else:
+				reward -= 1
+				#print ("punished -1 for going away from coin")
+			# If player has died
+			if self.game_over == -1:
+				reward-=1000
+				print ("Died - 1000")
+			# If player reaches wins
+			if self.game_over == 1:
+				reward+=1000
+			#print (self.player.getHeight())
+			# If player reaches coin (checkpoint)
+			if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
+				# update on screen score
+				score += 1
+				# Update Agent reward
+				reward += 700
+				print ("Got COin +700")
+
+			
+			
+			"""
+			# Deincentivise looking at a wall
+			# If looking at a wall and facing left
+			if self.player.getHeight() == 3 and self.player.direction == -1:
+				# If action is going towards the wall
+				if action in [0,1]:
+					reward-=60
+					print ("punished-60 for wall going into")
+				else:
+					reward+=40
+					print ("Rewarded+40 for wall going away")
+
+			# If looking at a wall and facing right
+			elif self.player.getHeight() == 3 and self.player.direction == 1:
+				# If action is going towards the wall
+				if action in [2,3]:
+					reward-=60
+					print ("punished-60 for wall going into")
+				else:
+					reward+=40
+					print ("Rewarded+40 for wall going away")
+
+
+			# if jumping
+			if action in [1, 3]:
+				# And on ground
+				if self.player.in_air == False:
+					currentRelativeHeight = self.player.getHeight()
+
+					# reward jumping over a gap or small blocks
+					if currentRelativeHeight in [1, 2, -2, -3]: 
+						reward += 50.0
+						print ("Rewarded+50 for jumping over block/gap")
+
+					else:
+						reward -= 60.0 
+						print ("Rewarded-60 for jumping randomly")
+
+			if self.player.getHeight() == 1:
+                
+                # Walking into left block 
+				if self.player.direction == -1:
+					if action == 0: # 0 = Walk Left (bad), 1 = Jump Left (good)
+						reward -= 20.0 
+						print("Bonk! Penalty for walking LEFT into block")
+
+                # CWalk into right block
+				elif self.player.direction == 1:
+					if action == 2: 
+						reward -= 20.0 
+						print("Bonk! Penalty for walking RIGHT into block")
+			"""
+			"""There are six discrete actions available: 
+		0: go left
+		1: go left and up
+		2: go right
+		3: go right and up
+		4: do nothing
+		"""
+			
+			"""
+			# Decentivise running into lava
+			# When faced with lava
+			if self.player.getHeight() == -3:
+				isRushingLeft = (self.player.direction == -1 and action == 0)
+				isRushingRight = (self.player.direction == 1 and action == 2)
+
+				if isRushingLeft or isRushingRight:
+					reward -= 100.0
+					print ("Rushing -100")
+				else:
+					print ("didnt rush into lava, self.player.direction", self.player.direction , "action ", action)
+
+			"""
+			
+			
+			# Check game is over (Win or Lose)
+			terminated = False
+			if (self.game_over == -1 or self.game_over == 1):
+				terminated = True
+
+			if render:
+				# Update Screen
+				screen.blit(bg_img, (0, 0))
+				screen.blit(sun_img, (100, 100))
+				self.world.draw()
+
+				screen.blit(self.player.image, self.player.rect)
+
+			# Handle Pygame events (keep window from freezing)
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+
+			if self.gameWon >= 1:
+				current_time = self.wonTime
+			else:
+				current_time = pygame.time.get_ticks() - self.start_time
+
+			# Update timing variables and screen
+			seconds = current_time // 1000
+			milliseconds = current_time % 1000
+			timer_text = f"Time: {seconds}.{milliseconds:03d}"
+			if render:
+				self.draw_text(' X ' + str(score), font_score, black, ((tile_size-5)*scale), (8*scale))
+				self.draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
+			# Move enemies
+			self.world.blob_group.update()
+			
+			if render:
+				# Update sprites
+				self.world.blob_group.draw(screen)
+				self.world.lava_group.draw(screen)
+				self.world.coin_group.draw(screen)
+				self.world.exit_group.draw(screen)
+
+			# update tick
+			clock.tick(fps)
+			self.frame += 1
+			if render:
+				pygame.display.update()
+
+			# update prev distance to goal
+			self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+
+			if terminated:
+				x = actionOverXFrames
+			
+			# stop movement in 4 frames if landing or start falling
+			if wasInAir != self.player.in_air:
+				break
+			wasInAir = self.player.in_air
+			if self.game_over == -1:
+				break
 		# Return new observation given new state, reward calculated and game over
 		return self.get_state(), reward, terminated, {}
-		
-		#if platformE.frame % 20 == 0:
-		#	platformE.d14Vector()
+			
+			#if platformE.frame % 20 == 0:
+			#	platformE.d14Vector()
 
 	# Returns observation of current state
 	def get_state(self):
@@ -407,6 +553,13 @@ class platformerEnv:
 		# Adds player vertical velocity 
 		verticalV = round((self.player.rect.y - (self.player.rect.y - self.player.vel_y) / 15),3)
 		state_vector.append(verticalV)
+
+		# Adds player horizontal velocity 
+		horV = self.player.dx / 5.0  
+		state_vector.append(horV)
+
+		# Adds player direction
+		state_vector.append(self.player.direction)
 
 		# Add terrain infront of players relative height to player
 		relH = self.player.getHeight()/3
@@ -607,10 +760,12 @@ class Player():
 		if self.direction == -1:  #facing left
 			pixelsToCheckx = xPos-50 #block on left
 			pixelsToCheckY = yPos+79
+			pygame.draw.circle(screen, (255, 0, 0), (pixelsToCheckx, pixelsToCheckY), 50)
 			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
 		else:
 			pixelsToCheckx = xPos+50#block on right
 			pixelsToCheckY = yPos+79
+			pygame.draw.circle(screen, (255, 0, 0), (pixelsToCheckx, pixelsToCheckY), 50)
 			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
 		
 		return Height
@@ -694,6 +849,8 @@ class Player():
 		self.images_left = []
 		self.index = 0
 		self.counter = 0
+		self.dx = 0
+		self.dy = 0
 		
 		# draw animation for the player
 		for num in range(1, 5):
