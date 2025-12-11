@@ -16,8 +16,10 @@ N_TRIALS = 20
 REWARD_THRESHOLD = 1500 
 PRINT_INTERVAL = 10
 
-LEARNING_RATE = 0.003 # 0.003
-LEARNING_RATE_BOOST = 0.006
+
+LEARNING_RATE = 0.002        
+LEARNING_RATE_BOOST = 0.004  
+BOOST_THRESHOLD = 800        
 MAX_BOOST_EPOCH = 1200
 
 
@@ -128,17 +130,20 @@ def agentStart():
     policy = nm.Network() 
 
     
-    #policy.load_state_dict(torch.load('./policy.pt', weights_only=True))
+    #policy.load_state_dict(torch.load('./policy_265_best.pt', weights_only=True))
     policy.train()
     episode_returns = []
     episode_return, stepwise_returns, log_prob_actions, entropies = forward_pass(env, policy, DISCOUNT_FACTOR)
-
+    best_mean_reward = -float('inf')
     optimizer = opt.Adam(policy.parameters(), lr = LEARNING_RATE)
 
     for episode in range(1, MAX_EPOCHS+1):
+
+
+
         episode_return, stepwise_returns, log_prob_actions, entropies = forward_pass(env, policy, DISCOUNT_FACTOR)
         manualSaveCheck(policy)
-        if episode_return > 0 and episode < MAX_BOOST_EPOCH:
+        if episode_return > BOOST_THRESHOLD and episode < MAX_BOOST_EPOCH:
             print(f'Boosting learning rate at episode {episode:3} with score {episode_return:5.1f}!')
             optimizer.param_groups[0]['lr'] = LEARNING_RATE_BOOST 
         _ = update_policy(stepwise_returns, log_prob_actions, entropies, optimizer)
@@ -146,12 +151,18 @@ def agentStart():
 
         episode_returns.append(episode_return)
         mean_episode_return = np.mean(episode_returns[-N_TRIALS:])
+        
+        if episode > 20 and mean_episode_return > best_mean_reward:
+            best_mean_reward = mean_episode_return
+            print(f"★ New Best Average: {best_mean_reward:.1f}! Saving checkpoint...")
+            torch.save(policy.state_dict(), f'./policy_{best_mean_reward:.0f}_best.pt')
 
         if episode % PRINT_INTERVAL == 0:
             print(f'| Episode: {episode:3} | Mean Rewards: {mean_episode_return:5.1f} |')
         
         if mean_episode_return >= REWARD_THRESHOLD:
             print(f'Reached reward threshold in {episode} episodes')
+            torch.save(policy.state_dict(), './final_policy.pt')
             break
 
     # save the learned policy

@@ -16,10 +16,10 @@ fps = 120
 screen_width = 1000*scale
 screen_height = 1000*scale
 
-render = True
+render = False
 actionOverXFrames = 5
 show_hitboxes = False
-timeLimit = 8
+timeLimit = 10
 
 # create window
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -223,6 +223,7 @@ class platformerEnv:
 		# Player position
 		playerX = self.player.rect.centerx
 		playerY = self.player.rect.y+55
+		decidedEnemyX = 0
 
 		# Initialize minimum distance and closest enemy position
 		minDistance = float('inf')
@@ -240,18 +241,21 @@ class platformerEnv:
 			if distance < minDistance:
 				# Update minimum distance and closest enemy position
 				minDistance = distance
+				decidedEnemyX = enemyX
 
-		return minDistance
+		return decidedEnemyX, minDistance
 	
 	# Get distance to closest goal or coin
 	def getClosestGoalOrCoinDistance(self, playerX, playerY):
 		minDistance = float('inf')
+		decidedCoinX = 0
 		for coin in self.world.coin_group:
 			coinX = coin.rect.x
 			coinY = coin.rect.y
 			distance = ((coinX - playerX - 40) ** 2 + ((coinY+52) - (playerY+80)) ** 2) ** 0.5
 			if distance < minDistance:
 				minDistance = distance
+				decidedCoinX = coinX
 		
 		for goal in self.world.exit_group:
 			goalX = goal.rect.x
@@ -259,8 +263,9 @@ class platformerEnv:
 			distance = ((goalX + 35 - playerX) ** 2 + ((goalY+ - playerY)) ** 2) ** 0.5
 			if distance < minDistance:
 				minDistance = distance
+				decidedCoinX = goalX
 
-		return minDistance
+		return decidedCoinX, minDistance
 	# get the disance to the closest sprite in a group
 	def closest_sprite(self, player, sprites):
 		# initialize minimum distance to a large value
@@ -357,7 +362,7 @@ class platformerEnv:
 				if isFacingWall:
 
 					if isWalkingLeft or isJumpingLeft:
-						reward-=5
+						reward-=20
 					
 					elif isWalkingRight or isJumpingRight:
 						reward+=8
@@ -393,7 +398,7 @@ class platformerEnv:
 						reward+=5
 					
 					elif isWalkingRight or isJumpingRight:
-						reward-=8
+						reward-=20
 
 				elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
 					if isMiddair:
@@ -416,13 +421,13 @@ class platformerEnv:
 					else:
 						reward-=5
 			
-			
+			coinDirection, coinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 			# incentivise getting closer to goal/coin
-			if self.prevDistance > self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
-				reward += 2
+			if self.prevDistance > coinDistance:
+				reward += 0.2
 				#print ("rewarded +2 for going to coin")
 			else:
-				reward -= 3
+				reward -= 0.2
 				#print ("punished -1 for going away from coin")
 			# If player has died
 			if self.game_over == -1:
@@ -437,8 +442,8 @@ class platformerEnv:
 				# update on screen score
 				score += 1
 				# Update Agent reward
-				reward += 700
-				print ("Got COin +700")
+				reward += 50
+				# print ("Got COin +700")
 
 			
 			
@@ -568,7 +573,7 @@ class platformerEnv:
 					pygame.display.update()
 
 				# update prev distance to goal
-				self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+				coinDirection, self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 
 				if terminated:
 					break
@@ -625,25 +630,36 @@ class platformerEnv:
 		
 		
 		# Add distance to nearest enemy
-		enemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
+		enemyX, enemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
 		enemyDistance = putInRange(enemyDistance,-300,300)
 		enemyDistance = round(enemyDistance/300,3)
 		state_vector.append(enemyDistance)
 		
+		# Enemy Direction
+		if self.player.rect.x>enemyX:
+			state_vector.append(0)
+		else:
+			state_vector.append(1)
 
 		# Add distance to nearest coin or goal
-		goalCoinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+		coinX, goalCoinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 		goalCoinDistance = putInRange(goalCoinDistance,-300,300)
 		goalCoinDistance = round(goalCoinDistance/300,3)
 		state_vector.append(goalCoinDistance)
+
+		# Coin Direction
+		if self.player.rect.x>coinX:
+			state_vector.append(0)
+		else:
+			state_vector.append(1)
 		
 		# Display Values
 		if False:
+			print("playerX: ", playerx)
 			print("playery: ", playery)
 			print("int(self.player.in_air): ", int(self.player.in_air))
-			print("playerX: ", playerx)
 			print("verticalV: ", int(verticalV))
-			print("horV: ", int(horV))
+			print("horizontalV: ", int(horV))
 			print("self.player.direction: ", self.player.direction)
 			print("relH: ", relH)
 			print("enemyDistance: ", enemyDistance)
