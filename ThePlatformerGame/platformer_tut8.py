@@ -248,7 +248,7 @@ class platformerEnv:
 	# Get distance to closest goal or coin
 	def getClosestGoalOrCoinDistance(self, playerX, playerY):
 		minDistance = float('inf')
-		decidedCoinX = coin.rect.x
+		decidedCoinX = 0
 		for coin in self.world.coin_group:
 			coinX = coin.rect.x
 			coinY = coin.rect.y
