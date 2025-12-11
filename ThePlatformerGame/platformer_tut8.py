@@ -786,12 +786,10 @@ class Player():
 		if self.direction == -1:  #facing left
 			pixelsToCheckx = xPos-50 #block on left
 			pixelsToCheckY = yPos+79
-			pygame.draw.circle(screen, (255, 0, 0), (pixelsToCheckx, pixelsToCheckY), 50)
 			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
 		else:
 			pixelsToCheckx = xPos+50#block on right
 			pixelsToCheckY = yPos+79
-			pygame.draw.circle(screen, (255, 0, 0), (pixelsToCheckx, pixelsToCheckY), 50)
 			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
 		
 		#return relative height

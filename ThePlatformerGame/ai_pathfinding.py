@@ -210,8 +210,6 @@ def checkTerrain(player, pixelsToCheckx, pixelsToCheckY,world_data):
 
 	return height
 						
-
-
 # get the disance to the closest sprite in a group
 def closest_sprite(player, sprites):
 	# initialize minimum distance to a large value
@@ -235,7 +233,7 @@ def closest_sprite(player, sprites):
 	# return the closest sprite found
 	return closest
 
-
+# get the distance to the closest enemy (slime), the x position and its direction
 def getClosestEnemyDistance(platform_env, player):
 	# Player position
 	playerX = player.rect.centerx
