@@ -88,6 +88,10 @@ def forward_pass(env, policy, discount_factor):
     
     stepwise_returns = calculate_stepwise_returns(rewards, discount_factor)
 
+    if np.random.rand() < 0.01: # Print rarely how confident agent is in action
+        probs = distribution.probs.detach().numpy()[0]
+        print(f"Action Confidence: {probs}")
+
     # 4. Return entropies
     return episode_return, stepwise_returns, log_prob_actions, entropies
 
