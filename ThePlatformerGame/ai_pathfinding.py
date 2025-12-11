@@ -1,5 +1,18 @@
 import math
 
+# verbose data
+# intial pixel to check
+# height reutrn
+# pixel to check after encounterning a gap (-3)
+# action
+# 
+# coin distance changing
+# low distance == happy
+# high distance == the ignore method
+# 
+# slime when within certain distance
+# moving away or towards 
+
 # Action mapping:
 # 0 left, 1 left+jump, 2 right, 3 right+jump, 4 up, 5 idle
 
@@ -126,7 +139,6 @@ def terrain_ai(platform_env):
 		return 5  # Default fallback
 	return 5  # Default fallback
 
-
 def getHeight(player):
 	# Player position
 	xPos = player.rect.x
@@ -146,6 +158,8 @@ def getHeight(player):
 	# initial check the block 
 	blockCheck = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
 
+	originalCheckX = pixelsToCheckx
+
 	# if the block not a gap to jump
 	if blockCheck != -3:
 		return blockCheck
@@ -160,7 +174,7 @@ def getHeight(player):
 def checkTerrain(player, pixelsToCheckx, pixelsToCheckY,world_data):
 	height = 0
 	tileCount = 20
-	
+
 	# convert pixels coordinates -> tile coords
 	xCord = math.floor(pixelsToCheckx/50)
 	yCord = math.floor(pixelsToCheckY/50)
