@@ -16,7 +16,7 @@ fps = 120
 screen_width = 1000*scale
 screen_height = 1000*scale
 
-render = True
+render = False
 actionOverXFrames = 5
 show_hitboxes = False
 timeLimit = 10
@@ -421,9 +421,9 @@ class platformerEnv:
 					else:
 						reward-=5
 			
-			
+			coinDirection, coinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 			# incentivise getting closer to goal/coin
-			if self.prevDistance > self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y):
+			if self.prevDistance > coinDistance:
 				reward += 0.2
 				#print ("rewarded +2 for going to coin")
 			else:
@@ -573,7 +573,7 @@ class platformerEnv:
 					pygame.display.update()
 
 				# update prev distance to goal
-				self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+				coinDirection, self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 
 				if terminated:
 					break
