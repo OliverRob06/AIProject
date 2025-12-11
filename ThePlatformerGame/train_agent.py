@@ -104,8 +104,8 @@ def calculate_loss(stepwise_returns, log_prob_actions, entropies):
     loss = -(stepwise_returns * log_prob_actions).sum()
     
     # Entropy Bonus (Subtracts from loss to encourage exploration)
-    #entropy_bonus = -0.01 * entropies.sum()
-    entropy_bonus = -0.05 * entropies.sum()
+    #entropy_bonus = -0.05 * entropies.sum()
+    entropy_bonus = -0.005 * entropies.sum()
     
     
     return loss + entropy_bonus
@@ -137,7 +137,6 @@ def agentStart():
     #policy.load_state_dict(torch.load('./policy_-993_best.pt', weights_only=True))
     policy.train()
     episode_returns = []
-    episode_return, stepwise_returns, log_prob_actions, entropies = forward_pass(env, policy, DISCOUNT_FACTOR)
     best_mean_reward = -float('inf')
     optimizer = opt.Adam(policy.parameters(), lr = LEARNING_RATE)
 
