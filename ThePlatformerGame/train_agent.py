@@ -33,7 +33,7 @@ def manualSaveCheck(policy):
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:
-                 # save the learned policy
+                # save the learned policy
                 for param in policy.state_dict():
                     print(param, "\t", policy.state_dict()[param].size())
 
