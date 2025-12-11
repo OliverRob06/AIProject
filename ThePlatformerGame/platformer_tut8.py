@@ -223,7 +223,7 @@ class platformerEnv:
 		# Player position
 		playerX = self.player.rect.centerx
 		playerY = self.player.rect.y+55
-		decidedEnemyX = self.world.blob_group[0].rect.centerx
+		decidedEnemyX = 0
 
 		# Initialize minimum distance and closest enemy position
 		minDistance = float('inf')
