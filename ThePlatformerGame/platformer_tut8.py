@@ -4,10 +4,11 @@ from pygame.locals import *
 import math
 import sys
 	
+# initialize pygame
 pygame.init()
 pygame.font.init()	
-#						The Environment Global Variables
-scale = 0.7
+# The Environment Global Variables
+scale = 1
 slowerEnemy = False
 clock = pygame.time.Clock()
 fps = 60
@@ -20,28 +21,30 @@ actionOverXFrames = 5
 show_hitboxes = False
 timeLimit = 10
 
+# create window
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Platformer')
 
-#define game variables
+# define game variables
 tile_size = 50*scale
 main_menu = True
 score = 0
 
-#define font variables
+# define font variables
 font_score = pygame.font.SysFont('Bauhaus 93', 30)
 
-#define colours
+# define colour
 black = (0, 0,0)
 
 #load images
 sun_img = pygame.image.load('./ThePlatformerGame/img/sun.png')
 bg_img = pygame.image.load('./ThePlatformerGame/img/sky.png')
 win_img = pygame.image.load('./ThePlatformerGame/img/youwin.png')
-#dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
+# world data 2d array
+# dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
 world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 8, 0, 0, 2, 2, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1], 
 [1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
@@ -61,7 +64,7 @@ world_data = [
 [1, 0, 0, 0, 2, 2, 6, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
-
+# jed comment on what the function please 
 def putInRange(number, minV, maxV):
     # less than min
     output = max(number, minV)
@@ -69,6 +72,7 @@ def putInRange(number, minV, maxV):
     output = min(output, maxV)
     return output
 
+# platformer Environment Class 
 class platformerEnv:
 	# Initialize the environment
 	def __init__(self):
@@ -81,37 +85,46 @@ class platformerEnv:
 		self.world = World(world_data)
 		self.world.coin_group.add(self.score_coin)
 
+		# set world data and tile size
 		self.world_data = world_data
 		self.tile_size = tile_size
 
+		# initialize timing variables
 		self.start_time = pygame.time.get_ticks()
 		self.gameWon = False
 		self.wonTime = 0	
 		self.frame = 0
 		self.game_over = 0
+
+		# initialize previous distance to goal
 		self.prevDistance = 1
+		# initialize last x position
 		self.lastX = self.player.rect.x
 	
 	# Function to draw text on screen
 	def draw_text(self, text, font, text_col, x, y):
-
+		# error handling for font not initialized
 		if not pygame.font.get_init():
 			pygame.font.init()
-	
+		# render the text
 		img = font.render(text, True, text_col)
+		# update screen with text
 		screen.blit(img, (x, y))
 
 	# Reset the level	
 	def reset_level(self):
+		# Reset player and clear groups
 		self.player.reset()
 		self.world.blob_group.empty()
 		self.world.coin_group.empty()
 		self.world.lava_group.empty()
 		self.world.exit_group.empty()
 
+		# Create new world
 		world = World(world_data)
 		self.world_data = world_data
 		self.tile_size = tile_size
+
 		#create dummy coin for showing the score
 		score_coin = Coin(tile_size // 2, tile_size // 2)
 		world.coin_group.add(score_coin)
@@ -142,7 +155,7 @@ class platformerEnv:
 		playerVelY = self.player.rect.y - (self.player.rect.y - self.player.vel_y)
 
 		# see terrain infront of player
-		# later
+		Height = self.player.getHeight()
 
 		# enemy positions
 		for enemy in self.world.blob_group:
@@ -158,13 +171,7 @@ class platformerEnv:
 
 		# distances
 		closestEnemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
-		closestGoalOrCoin = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
-
-		# time spent
-		timeSpent = pygame.time.get_ticks() - self.start_time
-		
-		# Terrain
-		Height = self.player.getHeight()
+		target = self.closest_sprite(self.player, self.world.coin_group) if self.world.coin_group else self.closest_sprite(self.player, self.world.exit_group)
 
 		# get the pixel looking at
 		if self.player.direction == -1:  #facing left
@@ -177,8 +184,10 @@ class platformerEnv:
 		#print("Pixels to check Y: ", pixelsToCheckY)
 		
 
-		#print(Height)
-
+		# time spent
+		timeSpent = pygame.time.get_ticks() - self.start_time
+		
+		# prints
 		"""print("Player X: ", playerX)
 		print("Player Y: ", playerY)
 
@@ -203,39 +212,59 @@ class platformerEnv:
 		print("Player x: ", playX)
 		print("Player y: ", playY)
 
+		print("Pixels to check X: ", pixelsToCheckx)
+		print("Pixels to check Y: ", pixelsToCheckY)
+
+
 		print("Time Spent (ms): ", timeSpent)"""
 
 	# Get distance to closest enemy
 	def getClosestEnemyDistance(self, playerX, playerY):
+		# Player position
+		playerX = self.player.rect.centerx
+		playerY = self.player.rect.y+55
+
+		# Initialize minimum distance and closest enemy position
 		minDistance = float('inf')
+		
+		# For each enemy in the blob group
 		for enemy in self.world.blob_group:
-			enemyX = enemy.rect.x
-			enemyY = enemy.rect.y
+			# Enemy position
+			enemyX = enemy.rect.centerx
+			enemyY = enemy.rect.y+12
 			#Slime height = 52, player height = 80
-			distance = ((enemyX - playerX +45) ** 2 + ((enemyY+52) - (playerY+80)) ** 2) ** 0.5
+
+			# Calculate distance to player using pythagorean theorem
+			distance = ((enemyX - playerX) ** 2 + ((enemyY) - (playerY)) ** 2) ** 0.5
+			# If this distance is less than the minimum distance found so far
 			if distance < minDistance:
+				# Update minimum distance and closest enemy position
 				minDistance = distance
 
 		return minDistance
 	
-	# Get distance to closest goal or coin
-	def getClosestGoalOrCoinDistance(self, playerX, playerY):
-		minDistance = float('inf')
-		for coin in self.world.coin_group:
-			coinX = coin.rect.x
-			coinY = coin.rect.y
-			distance = ((coinX - playerX - 40) ** 2 + ((coinY+52) - (playerY+80)) ** 2) ** 0.5
-			if distance < minDistance:
-				minDistance = distance
-		
-		for goal in self.world.exit_group:
-			goalX = goal.rect.x
-			goalY = goal.rect.y
-			distance = ((goalX + 35 - playerX) ** 2 + ((goalY+ - playerY)) ** 2) ** 0.5
-			if distance < minDistance:
-				minDistance = distance
+	# get the disance to the closest sprite in a group
+	def closest_sprite(self, player, sprites):
+		# initialize minimum distance to a large value
+		min_dist = float('inf')
+		# initialize closest sprite to None
+		closest = None
 
-		return minDistance
+		#for each sprite in the group
+		for s in sprites:
+			# calculate the distance to the player, favouring the x-axis
+			dist = math.hypot(
+				player.rect.centerx - s.rect.x,
+				(player.rect.centery - s.rect.y)*10,
+			)
+			# if this distance is less than the minimum distance found so far
+			if dist < min_dist:
+				# update minimum distance and closest sprite
+				min_dist = dist
+				closest = s
+
+		# return the closest sprite found
+		return closest
 
 	## Reset, Step and getState all are in a class with player, world, enemies as elements
 	# Used for the AI resetting
@@ -244,13 +273,16 @@ class platformerEnv:
 		self.player.reset()
 		self.game_over = 0
 		score = 0
+		# initialize previous distance to goal
 		self.prevDistance = 1
+
+		# initialize world
 		self.world = self.reset_level()
+		# initialize last x position
 		self.lastX = self.player.rect.x
 
+		# initialize timing variables
 		self.start_time = pygame.time.get_ticks()
-		
-		
 		
 		# Return the initial state of the game and an empty info dict
 		return self.get_state(), {}
@@ -478,7 +510,8 @@ class platformerEnv:
 				screen.blit(sun_img, (100, 100))
 				self.world.draw()
 
-				screen.blit(self.player.image, self.player.rect)
+		# draw player
+		screen.blit(self.player.image, self.player.rect)
 
 			# Handle Pygame events (keep window from freezing)
 			for event in pygame.event.get():
@@ -486,10 +519,11 @@ class platformerEnv:
 					pygame.quit()
 					sys.exit()
 
-			if self.gameWon >= 1:
-				current_time = self.wonTime
-			else:
-				current_time = pygame.time.get_ticks() - self.start_time
+		# Calculate time survived
+		if self.gameWon >= 1:
+			current_time = self.wonTime
+		else:
+			current_time = pygame.time.get_ticks() - self.start_time
 
 			# Update timing variables and screen
 			seconds = current_time // 1000
@@ -577,10 +611,10 @@ class platformerEnv:
 		goalCoinDistance = round(goalCoinDistance/300,3)
 		state_vector.append(goalCoinDistance)
 
-		
 		# Returns Set turned into NumPy Float Tensor 
 		return np.array(state_vector, dtype=np.float32)
 
+# Player class
 class Player():
 	# Initialize player
 	def __init__(self):
@@ -704,7 +738,6 @@ class Player():
 						self.vel_y = 0
 						self.in_air = False
 
-
 			#check for collision with enemies
 			if pygame.sprite.spritecollide(self, world.blob_group, False):
 				game_over = -1
@@ -734,8 +767,7 @@ class Player():
 			pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 		
 		return game_over
-
-		
+	
 	def getHeight(self):
 
 		#Terrain States 
@@ -744,17 +776,11 @@ class Player():
 		# OBSTACLE = 2
 		# Objective = 3
 		# #screen size = 1000px^2
-		#tile size = 50px^2
-		#dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
-		#player coords
+		# tile size = 50px^2
+		# dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
+		# player coords
 		xPos = self.rect.x #100 by default
 		yPos = self.rect.y #870 by default
-
-
-		#find block below
-
-		# the reason that the ai jumps too early is because it check the 50 block 50 pixel to right of the origin of the imgs x and y specically to the left
-
 
 		#direction player faces
 		if self.direction == -1:  #facing left
@@ -768,81 +794,63 @@ class Player():
 			pygame.draw.circle(screen, (255, 0, 0), (pixelsToCheckx, pixelsToCheckY), 50)
 			Height = self.checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data)
 		
+		#return relative height
 		return Height
 		
-
-	#return relative height
-	#3 big wall
-	#2 2 block
-	#1 1 block
-	#-1 next block along
-	#-2 1 block gap
-	#-3 2 block gap
-	
-
+	# check terrain type in front of player and return height of terrain relative to player
 	def checkTerrain(self, pixelsToCheckx, pixelsToCheckY,world_data):
 		height = 0
 		tileCount = 20
-		
-		#convert pixels coordinates -> tile coords
-		xCord = math.floor(pixelsToCheckx/tile_size)
-		yCord = math.floor(pixelsToCheckY/tile_size)
-
-
+	
+		# convert pixels coordinates -> tile coords
+		xCord = math.floor(pixelsToCheckx/50)
+		yCord = math.floor(pixelsToCheckY/50)
 
 		#boundary protection
 		if xCord <0 or yCord<0 or xCord >=tileCount or yCord>=tileCount:
-			return 0
+			return 5
 		
+		# the tile in front of us
+		tileData = world_data[yCord][xCord] 
+		# get Terrain Type
 
-		tileData = world_data[yCord][xCord] #the tile in front of us
-		Terrain = self.getTerrain(tileData) #get Terrain Type
-
-
-		#CHECKS BELOW US
-
-		if Terrain == 0 or Terrain == 2 or Terrain == 3: #if an air, enemy or objective   
+		# check the block in front of us
+		# if the block is air, enemy spawn or coin position, move down a block to check
+		if tileData == 0 or tileData == 3 or tileData == 7:  
 			for i in range (1,4):
-				yCord += 1 #add 1 to height to check tile above
-				height = (-i) #set height to the -index of the loop
-				tileData = world_data[yCord][xCord] #get tile data
+				#add 1 to height to check tile above
+				yCord += 1 
+				#set height to the -index of the loop
+				height = (-i) 
+				#get tile data
+				tileData = world_data[yCord][xCord] 
 
-				if self.getTerrain(world_data[yCord][xCord]) == 1: #get Terrain again
+				#get Terrain again
+				if tileData == 1 or tileData == 2: 
 					break
-				elif self.getTerrain(world_data[yCord][xCord]) == 4:
+				#if the tile is lava set height to -3 
+				elif tileData == 6:
 					height = -3
 					break
 
 		#CHECKS ABOVE US
-
-		elif Terrain == 1:
+		# if the block is a dirt block, move up a block to check
+		elif tileData == 1 or tileData == 2:
 			for i in range (1,4):
+				# subtract 1 from yCord to check tile above
 				yCord -= 1
+				# set height to the index of the loop
 				height = i
+				# get tile data
 				tileData = world_data[yCord][xCord]
-				TerrainAbove = self.getTerrain(tileData)
-				if TerrainAbove == 0 or TerrainAbove == 2 or TerrainAbove == 3:
+				
+				#get Terrain again
+				# if the tile above is air, enemy spawn or coin position, stop checking
+				if tileData == 0 or tileData == 3 or tileData == 7:
 					break
 
 		return height
 							
-	def getTerrain(self, tileData):					
-		if tileData == 0:
-			Terrain = 0 #there is a gap needs jumped
-		elif tileData == 1 or tileData == 2:
-			Terrain = 1 #there is a block, walk forwards
-		elif tileData == 3:
-			Terrain = 2 #there is slime
-		elif tileData == 6:
-			Terrain = 4 # there is lava
-		else:
-			Terrain = 3 #there is objective
-
-		return Terrain
-
-
-
-
 	# Reset player position
 	def reset(self):
 		self.images_right = []
@@ -874,6 +882,7 @@ class Player():
 		self.direction = 1
 		self.in_air = True
 
+# World class
 class World():
 	# Initialize world with level data
 	def __init__(self, data):
@@ -924,7 +933,7 @@ class World():
 					lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
 					self.lava_group.add(lava)
 				
-				# coin
+				# if tile is coin
 				if tile == 7:
 					coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
 					self.coin_group.add(coin)
@@ -944,15 +953,18 @@ class World():
 			if show_hitboxes:
 				pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
+# Enemy class
 class Enemy(pygame.sprite.Sprite):
 	# Initialize enemy
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
 		img = pygame.image.load('./ThePlatformerGame/img/blob.png')
+		# scale enemy size
 		self.image = pygame.transform.scale(img, (tile_size-1, tile_size-tile_size*0.3))
 		self.rect = self.image.get_rect()
+		
+		# set enemy position
 		self.rect.x = x
-
 		self.rect.y = y-((tile_size/3)-tile_size*0.3)
 		
 		# randomly choose left or right direction at beginning
@@ -978,6 +990,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.move_direction *= -1
 			self.move_counter *= -1
 
+# Lava class
 class Lava(pygame.sprite.Sprite):
 	# Initialize lava
 	def __init__(self, x, y):
@@ -985,9 +998,11 @@ class Lava(pygame.sprite.Sprite):
 		img = pygame.image.load('./ThePlatformerGame/img/lava.png')
 		self.image = pygame.transform.scale(img, (tile_size, tile_size // 2))
 		self.rect = self.image.get_rect()
+		# set lava position
 		self.rect.x = x
 		self.rect.y = y
 
+# Coin class
 class Coin(pygame.sprite.Sprite):
 	# Initialize coin
 	def __init__(self, x, y):
@@ -995,8 +1010,10 @@ class Coin(pygame.sprite.Sprite):
 		img = pygame.image.load('./ThePlatformerGame/img/coin.png')
 		self.image = pygame.transform.scale(img, (tile_size // 2, tile_size // 2))
 		self.rect = self.image.get_rect()
+		# set coin position
 		self.rect.center = (x, y)
 
+# Exit class
 class Exit(pygame.sprite.Sprite):
 	# Initialize exit
 	def __init__(self, x, y):
@@ -1004,32 +1021,34 @@ class Exit(pygame.sprite.Sprite):
 		img = pygame.image.load('./ThePlatformerGame/img/exit.png')
 		self.image = pygame.transform.scale(img, (tile_size, int(tile_size * 1.5)))
 		self.rect = self.image.get_rect()
+		
+		# set exit position
 		self.rect.x = x
 		self.rect.y = y
 
-
-
-
+# Main function to run either human or pathfinding AI
 def humanOrPathfind(use_ai):
 	run = True
 	platformE = platformerEnv()
 
-
-	# Initialize AI variables
+	# Main game loop
 	while run:
-
 		global score
-
+		# set framerate
 		clock.tick(fps)
 
+		# draw background
 		screen.blit(bg_img, (0, 0))
 		screen.blit(sun_img, (100, 100))
 		platformE.world.draw()
 		
+		# if the game is not over
 		if platformE.game_over == 0:
+			# player has won reset timer
 			if platformE.gameWon >= 1:
 				current_time = platformE.wonTime
 
+			# clacue time played and draw to screen
 			current_time = pygame.time.get_ticks() - platformE.start_time
 			seconds = current_time // 1000
 			milliseconds = current_time % 1000
@@ -1038,32 +1057,34 @@ def humanOrPathfind(use_ai):
 			platformE.draw_text(' X ' + str(score), font_score, black, ((tile_size-5)*scale), (8*scale))
 			platformE.draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
 
+			# move enemies
 			platformE.world.blob_group.update()
-			#update score
-			#check if a coin has been collected
+
+			#check if a coin has been collected and update score
 			if pygame.sprite.spritecollide(platformE.player, platformE.world.coin_group, True):
 				score += 1
 				
+			# draw sprites
 			platformE.world.blob_group.draw(screen)
 			platformE.world.lava_group.draw(screen)
 			platformE.world.coin_group.draw(screen)
 			platformE.world.exit_group.draw(screen)
-			#platformE.player.getTerrainInFront()
+			#test platformE.player.getTerrainInFront()
 
 			# Use AI or player control based on selected mode
 			if use_ai:
-				# Get next AI action from ai.py
+				# Get next AI action from ai_pathfinding.py
 				from ai_pathfinding import terrain_ai
 				action = terrain_ai(platformE)
-				
 			else:
 				action = 10  # Use 10 to indicate player control
 			
-			#print("AI Action:", action)
+			#test print("AI Action:", action)
 			platformE.game_over = platformE.player.update(action, platformE.world, platformE.game_over)
 
 			#if player has died
 			if platformE.game_over == -1:
+					# reset world and player
 					platformE.player.reset()
 					platformE.game_over = 0
 					score = 0
@@ -1071,6 +1092,7 @@ def humanOrPathfind(use_ai):
 					
 			#if player reaches exit
 			if platformE.game_over == 1:
+				# reset world, player and time
 				platformE.player.reset()
 				platformE.game_over = 0
 				score = 0
@@ -1082,10 +1104,9 @@ def humanOrPathfind(use_ai):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				run = False
+		# debug print
+		#platformE.d14Vector()
 		
-		platformE.d14Vector()
-
-		platformE.frame += 1
 		pygame.display.update()
 
 	pygame.quit()
