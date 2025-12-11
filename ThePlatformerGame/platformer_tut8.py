@@ -16,7 +16,7 @@ fps = 120
 screen_width = 1000*scale
 screen_height = 1000*scale
 
-render = False
+render = True
 actionOverXFrames = 5
 show_hitboxes = False
 timeLimit = 10
