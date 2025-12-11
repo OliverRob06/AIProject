@@ -18,8 +18,10 @@ PRINT_INTERVAL = 10
 
 
 LEARNING_RATE = 0.002        
-LEARNING_RATE_BOOST = 0.004  
-BOOST_THRESHOLD = 800        
+LEARNING_RATE_BOOST = 0.005
+#LEARNING_RATE_BOOST = 0.004
+BOOST_THRESHOLD = 0   
+#BOOST_THRESHOLD = 800        
 MAX_BOOST_EPOCH = 1200
 
 
@@ -102,7 +104,9 @@ def calculate_loss(stepwise_returns, log_prob_actions, entropies):
     loss = -(stepwise_returns * log_prob_actions).sum()
     
     # Entropy Bonus (Subtracts from loss to encourage exploration)
-    entropy_bonus = -0.01 * entropies.sum()
+    #entropy_bonus = -0.01 * entropies.sum()
+    entropy_bonus = -0.05 * entropies.sum()
+    
     
     return loss + entropy_bonus
 
@@ -130,7 +134,7 @@ def agentStart():
     policy = nm.Network() 
 
     
-    #policy.load_state_dict(torch.load('./policy_265_best.pt', weights_only=True))
+    #policy.load_state_dict(torch.load('./policy_-993_best.pt', weights_only=True))
     policy.train()
     episode_returns = []
     episode_return, stepwise_returns, log_prob_actions, entropies = forward_pass(env, policy, DISCOUNT_FACTOR)
