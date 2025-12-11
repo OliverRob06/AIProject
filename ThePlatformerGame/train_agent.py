@@ -49,12 +49,14 @@ def calculate_stepwise_returns(rewards, discount_factor):
         total_rewards = reward + total_rewards * discount_factor
         returns.insert(0, total_rewards)
     returns = torch.tensor(returns)
-    normalized_returns = (returns - returns.mean()) / returns.std()
+    eps = 1e-9 # Small number
+    normalized_returns = (returns - returns.mean()) / (returns.std() + eps)
     return normalized_returns
 
 
 def forward_pass(env, policy, discount_factor):
     log_prob_actions = []
+    entropies = []   
     rewards = []
     done = False
     episode_return = 0
@@ -62,43 +64,53 @@ def forward_pass(env, policy, discount_factor):
     policy.train()
     observation, info = env.reset()
     
-    # While Game not ended through Winning or Loss
     while not done:
-        # Creates Tensor to store observation
         observation = torch.FloatTensor(observation).unsqueeze(0)
-
-        # Passes current observation through neural network and takes distribution
         distribution = dist.Categorical(policy(observation))
         action = distribution.sample()
 
-        # logs probable action based on distribution
+        # ... existing logging code ...
         log_prob_action = distribution.log_prob(action)
         log_prob_actions.append(log_prob_action)
 
-        # Performs the action calculated
+        # 2. Calculate and store entropy for this step
+        entropies.append(distribution.entropy()) 
+
         observation, reward, terminated, info = env.step(action.item())
-        # Used to end while loop, check the game hasnt been won or ended
         done = terminated
-        # Adds reward to rewards list for stepwise returns calculation
         rewards.append(reward)
-        # Adds reward for action being taken to running total
         episode_return += reward
 
     log_prob_actions = torch.cat(log_prob_actions)
+    
+    # 3. Stack the entropies into a single Tensor
+    entropies = torch.stack(entropies) 
+    
     stepwise_returns = calculate_stepwise_returns(rewards, discount_factor)
 
-    return episode_return, stepwise_returns, log_prob_actions
+    # 4. Return entropies
+    return episode_return, stepwise_returns, log_prob_actions, entropies
 
-
-def calculate_loss(stepwise_returns, log_prob_actions):
+def calculate_loss(stepwise_returns, log_prob_actions, entropies): 
+    # Standard Policy Gradient Loss
     loss = -(stepwise_returns * log_prob_actions).sum()
-    return loss
-
-
-def update_policy(stepwise_returns, log_prob_actions, optimizer):
-    stepwise_returns = stepwise_returns.detach()
-    loss = calculate_loss(stepwise_returns, log_prob_actions)
     
+    # Entropy Bonus (Subtracts from loss to encourage exploration)
+    entropy_bonus = -0.01 * entropies.sum()
+    
+    return loss + entropy_bonus
+
+
+def update_policy(stepwise_returns, log_prob_actions, entropies, optimizer):
+    stepwise_returns = stepwise_returns.detach()
+    
+    # Pass the entropies to the loss calculation
+    loss = calculate_loss(stepwise_returns, log_prob_actions, entropies)
+    
+     # Print Debug Stats every 10 updates
+    if np.random.rand() < 0.1:
+        print(f"Loss: {loss.item():.4f} | Returns Max: {stepwise_returns.max():.2f} | Returns Min: {stepwise_returns.min():.2f}")
+
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
@@ -106,25 +118,26 @@ def update_policy(stepwise_returns, log_prob_actions, optimizer):
     return loss.item()
 
 def agentStart():   
-    episode_returns = []
 
-    
     env = plat.platformerEnv() 
 
     policy = nm.Network() 
 
+    
     #policy.load_state_dict(torch.load('./policy.pt', weights_only=True))
     policy.train()
+    episode_returns = []
+    episode_return, stepwise_returns, log_prob_actions, entropies = forward_pass(env, policy, DISCOUNT_FACTOR)
 
     optimizer = opt.Adam(policy.parameters(), lr = LEARNING_RATE)
 
     for episode in range(1, MAX_EPOCHS+1):
-        episode_return, stepwise_returns, log_prob_actions = forward_pass(env, policy, DISCOUNT_FACTOR)
+        episode_return, stepwise_returns, log_prob_actions, entropies = forward_pass(env, policy, DISCOUNT_FACTOR)
         manualSaveCheck(policy)
         if episode_return > 0 and episode < MAX_BOOST_EPOCH:
             print(f'Boosting learning rate at episode {episode:3} with score {episode_return:5.1f}!')
             optimizer.param_groups[0]['lr'] = LEARNING_RATE_BOOST 
-        _ = update_policy(stepwise_returns, log_prob_actions, optimizer)
+        _ = update_policy(stepwise_returns, log_prob_actions, entropies, optimizer)
         optimizer.param_groups[0]['lr'] = LEARNING_RATE
 
         episode_returns.append(episode_return)

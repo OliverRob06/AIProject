@@ -11,7 +11,7 @@ pygame.font.init()
 scale = 1
 slowerEnemy = False
 clock = pygame.time.Clock()
-fps = 60
+fps = 120
 
 screen_width = 1000*scale
 screen_height = 1000*scale
@@ -19,7 +19,7 @@ screen_height = 1000*scale
 render = True
 actionOverXFrames = 5
 show_hitboxes = False
-timeLimit = 10
+timeLimit = 8
 
 # create window
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -60,7 +60,7 @@ world_data = [
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 2, 2, 1, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 2, 2, 1, 1, 1, 1, 1], 
-[1, 0, 0, 0, 0, 7, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 2, 2, 6, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
@@ -316,7 +316,8 @@ class platformerEnv:
 
 		# For calculating reward
 		# Starts at -0.5 to incentivise taking less time
-		reward = -0.5*actionOverXFrames
+		#reward = -0.5*actionOverXFrames
+		reward = 0
 		wasInAir = self.player.in_air
 		for x in range(actionOverXFrames):
 
@@ -359,7 +360,7 @@ class platformerEnv:
 						reward-=5
 					
 					elif isWalkingRight or isJumpingRight:
-						reward+=5
+						reward+=8
 
 				elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
 					if isMiddair:
@@ -392,7 +393,7 @@ class platformerEnv:
 						reward+=5
 					
 					elif isWalkingRight or isJumpingRight:
-						reward-=5
+						reward-=8
 
 				elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
 					if isMiddair:
@@ -421,12 +422,12 @@ class platformerEnv:
 				reward += 2
 				#print ("rewarded +2 for going to coin")
 			else:
-				reward -= 1
+				reward -= 3
 				#print ("punished -1 for going away from coin")
 			# If player has died
 			if self.game_over == -1:
 				reward-=1000
-				print ("Died - 1000")
+				# print ("Died - 1000")
 			# If player reaches wins
 			if self.game_over == 1:
 				reward+=1000
@@ -528,56 +529,56 @@ class platformerEnv:
 				screen.blit(sun_img, (100, 100))
 				self.world.draw()
 
-		# draw player
-		screen.blit(self.player.image, self.player.rect)
+			# draw player
+			screen.blit(self.player.image, self.player.rect)
 
-		# Handle Pygame events (keep window from freezing)
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				sys.exit()
+			# Handle Pygame events (keep window from freezing)
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
 
-		# Calculate time survived
-		if self.gameWon >= 1:
-			current_time = self.wonTime
-		else:
-			current_time = pygame.time.get_ticks() - self.start_time
+			# Calculate time survived
+			if self.gameWon >= 1:
+				current_time = self.wonTime
+			else:
+				current_time = pygame.time.get_ticks() - self.start_time
 
-			# Update timing variables and screen
-			seconds = current_time // 1000
-			milliseconds = current_time % 1000
-			timer_text = f"Time: {seconds}.{milliseconds:03d}"
-			if render:
-				self.draw_text(' X ' + str(score), font_score, black, ((tile_size-5)*scale), (8*scale))
-				self.draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
-			# Move enemies
-			self.world.blob_group.update()
+				# Update timing variables and screen
+				seconds = current_time // 1000
+				milliseconds = current_time % 1000
+				timer_text = f"Time: {seconds}.{milliseconds:03d}"
+				if render:
+					self.draw_text(' X ' + str(score), font_score, black, ((tile_size-5)*scale), (8*scale))
+					self.draw_text(timer_text, font_score, black, (screen_width-200)*scale, 4*scale)
+				# Move enemies
+				self.world.blob_group.update()
+				
+				if render:
+					# Update sprites
+					self.world.blob_group.draw(screen)
+					self.world.lava_group.draw(screen)
+					self.world.coin_group.draw(screen)
+					self.world.exit_group.draw(screen)
+
+				# update tick
+				clock.tick(fps)
+				self.frame += 1
+				if render:
+					pygame.display.update()
+
+				# update prev distance to goal
+				self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+
+				if terminated:
+					break
+				# stop movement in 4 frames if landing or start falling
+				if wasInAir != self.player.in_air:
+					break
+				wasInAir = self.player.in_air
+				if self.game_over == -1:
+					break
 			
-			if render:
-				# Update sprites
-				self.world.blob_group.draw(screen)
-				self.world.lava_group.draw(screen)
-				self.world.coin_group.draw(screen)
-				self.world.exit_group.draw(screen)
-
-			# update tick
-			clock.tick(fps)
-			self.frame += 1
-			if render:
-				pygame.display.update()
-
-			# update prev distance to goal
-			self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
-
-			if terminated:
-				x = actionOverXFrames
-			
-			# stop movement in 4 frames if landing or start falling
-			if wasInAir != self.player.in_air:
-				x = actionOverXFrames
-			wasInAir = self.player.in_air
-			if self.game_over == -1:
-				x = actionOverXFrames
 		# Return new observation given new state, reward calculated and game over
 		return self.get_state(), reward, terminated, {}
 			
@@ -594,41 +595,59 @@ class platformerEnv:
 		# Adds player x position 
 		playerx = round(self.player.rect.x /(tile_size * 20),3)
 		state_vector.append(playerx)
+		
 
 		# Adds player y position 
 		playery = round(self.player.rect.y /(tile_size * 20),3)
 		state_vector.append(playery)
-
+		
 		# Adds player in air boolean as 1 or 0 
 		state_vector.append(int(self.player.in_air))
 		
+		
 		# Adds player vertical velocity 
-		verticalV = round((self.player.rect.y - (self.player.rect.y - self.player.vel_y) / 15),3)
+		verticalV = round((self.player.rect.y - (self.player.rect.y - self.player.vel_y) / 15)/1000,3)
 		state_vector.append(verticalV)
+		
 
 		# Adds player horizontal velocity 
 		horV = self.player.dx / 5.0  
 		state_vector.append(horV)
+		
 
 		# Adds player direction
 		state_vector.append(self.player.direction)
+		
 
 		# Add terrain infront of players relative height to player
-		relH = self.player.getHeight()/3
+		relH = round(self.player.getHeight()/3,3)
 		state_vector.append(relH)		
+		
 		
 		# Add distance to nearest enemy
 		enemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
 		enemyDistance = putInRange(enemyDistance,-300,300)
 		enemyDistance = round(enemyDistance/300,3)
 		state_vector.append(enemyDistance)
+		
 
 		# Add distance to nearest coin or goal
 		goalCoinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 		goalCoinDistance = putInRange(goalCoinDistance,-300,300)
 		goalCoinDistance = round(goalCoinDistance/300,3)
 		state_vector.append(goalCoinDistance)
-
+		
+		# Display Values
+		if False:
+			print("playery: ", playery)
+			print("int(self.player.in_air): ", int(self.player.in_air))
+			print("playerX: ", playerx)
+			print("verticalV: ", int(verticalV))
+			print("horV: ", int(horV))
+			print("self.player.direction: ", self.player.direction)
+			print("relH: ", relH)
+			print("enemyDistance: ", enemyDistance)
+			print("goalCoinDistance: ", goalCoinDistance)
 		# Returns Set turned into NumPy Float Tensor 
 		return np.array(state_vector, dtype=np.float32)
 
