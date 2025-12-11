@@ -243,6 +243,24 @@ class platformerEnv:
 
 		return minDistance
 	
+	# Get distance to closest goal or coin
+	def getClosestGoalOrCoinDistance(self, playerX, playerY):
+		minDistance = float('inf')
+		for coin in self.world.coin_group:
+			coinX = coin.rect.x
+			coinY = coin.rect.y
+			distance = ((coinX - playerX - 40) ** 2 + ((coinY+52) - (playerY+80)) ** 2) ** 0.5
+			if distance < minDistance:
+				minDistance = distance
+		
+		for goal in self.world.exit_group:
+			goalX = goal.rect.x
+			goalY = goal.rect.y
+			distance = ((goalX + 35 - playerX) ** 2 + ((goalY+ - playerY)) ** 2) ** 0.5
+			if distance < minDistance:
+				minDistance = distance
+
+		return minDistance
 	# get the disance to the closest sprite in a group
 	def closest_sprite(self, player, sprites):
 		# initialize minimum distance to a large value
