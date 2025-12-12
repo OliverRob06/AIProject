@@ -7,7 +7,7 @@ echo =================================================
 echo.
 
 :: This command runs the installation
-pip install -r requirements.txt
+pip install -r .\ThePlatformerGame\install\requirements.txt
 
 echo.
 echo =================================================
