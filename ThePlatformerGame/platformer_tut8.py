@@ -11,12 +11,12 @@ pygame.font.init()
 scale = 1
 slowerEnemy = False
 clock = pygame.time.Clock()
-fps = 120
+fps = 60
 
 screen_width = 1000*scale
 screen_height = 1000*scale
 
-render = False
+render = True
 actionOverXFrames = 8
 show_hitboxes = False
 timeLimit = 12
@@ -43,27 +43,29 @@ win_img = pygame.image.load('./ThePlatformerGame/img/youwin.png')
 # world data 2d array
 # dirt block = 1, grass block = 2, enemy = 3, lava = 6, coin = 7, goal = 8
 world_data = [
-[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 8, 0, 0, 2, 2, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1], 
-[1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
-[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 2, 2, 1, 1], 
-[1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 2, 2, 6, 6, 2, 2, 1, 1, 1, 1], 
-[1, 0, 0, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-[1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
-[1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 1, 0, 7, 0, 0, 7, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 1], 
-[1, 1, 2, 2, 0, 0, 3, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 1], 
-[1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 7, 1], 
-[1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1], 
-[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], 
-[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 2, 2, 1, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 2, 2, 1, 1, 1, 1, 1], 
-[1, 0, 0, 0, 7, 0, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], 
-[1, 0, 0, 0, 2, 2, 6, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 8, 0, 0, 2, 2, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 2, 0, 7, 1],
+[1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+[1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7, 2, 2, 1, 1],
+[1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 2, 2, 6, 6, 2, 2, 1, 1, 1, 1],
+[1, 0, 0, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+[1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+[1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 1, 0, 7, 0, 0, 7, 0, 0, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 1],
+[1, 1, 2, 2, 0, 0, 3, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 1],
+[1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 7, 1],
+[1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 1],
+[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 2, 2, 2, 1, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 2, 2, 2, 1, 1, 1, 1, 1],
+[1, 0, 0, 0, 7, 0, 0, 0, 2, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+[1, 0, 0, 0, 2, 2, 6, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1],
 [1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
+
+
 # jed comment on what the function please 
 def putInRange(number, minV, maxV):
     # less than min
@@ -155,7 +157,7 @@ class platformerEnv:
 		playerVelY = self.player.rect.y - (self.player.rect.y - self.player.vel_y)
 
 		# see terrain infront of player
-		Height = self.player.getHeight()
+		Height = self.player.moveCheckPixelX()
 
 		# enemy positions
 		for enemy in self.world.blob_group:
@@ -349,7 +351,7 @@ class platformerEnv:
 				# update on screen score
 				score += 1
 				# Update Agent reward
-				reward += 50
+				reward += (100*(score+1))
 				# print ("Got COin +700")
 
 			# Check game is over (Win or Lose)
@@ -435,7 +437,7 @@ class platformerEnv:
 
 		isJumping = action == 1 or action == 3
 
-		curBlock = self.player.getHeight() 
+		curBlock = self.player.moveCheckPixelX() 
 
 		isFacingWall = curBlock == 3
 		isFacing2BlockHigh = curBlock == 2
@@ -462,10 +464,10 @@ class platformerEnv:
 				
 				if isJumpingLeft:
 					# Jump over
-					reward+=10
+					reward+=20
 				elif isWalkingLeft:
 					# Waste Movement
-					reward-=20
+					reward-=50
 				elif isWalkingRight or isJumpingRight:
 					# Retreat/Back Up
 					pass
@@ -500,7 +502,7 @@ class platformerEnv:
 					reward+=10
 				elif isWalkingRight:
 					# Waste Movement
-					reward-=20
+					reward-=50
 				elif isWalkingLeft or isJumpingLeft:
 					# Retreat/Back Up
 					pass
@@ -515,13 +517,17 @@ class platformerEnv:
 		coinDistanceX, coinDistanceY, coinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 		# incentivise getting closer to goal/coin
 		if self.prevDistance > coinDistance:
-			reward += 1
+			reward += 10
 			#print ("rewarded +2 for going to coin")
 		else:
-			reward -= 0.5
+			reward -= 1
 			#print ("punished -1 for going away from coin")
 			
 		self.prevDistance = coinDistance
+
+		print("curblock:", curBlock)
+		print("action:", action)
+		print("reward:", reward)
 		# Return new observation given new state, reward calculated and game over
 		return self.get_state(), reward, terminated, {}
 		
@@ -564,7 +570,7 @@ class platformerEnv:
 		
 
 		# Add terrain infront of players relative height to player
-		relH = round(self.player.getHeight()/3,3)
+		relH = round(self.player.moveCheckPixelX()/3,3)
 		state_vector.append(relH)		
 		
 		
@@ -760,7 +766,7 @@ class Player():
 		
 		return game_over
 	
-	def getHeight(self):
+	def moveCheckPixelX(self):
 		# Player position
 		xPos = self.rect.x
 		yPos = self.rect.y

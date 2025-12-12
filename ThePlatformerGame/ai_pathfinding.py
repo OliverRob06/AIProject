@@ -39,7 +39,7 @@ def terrain_ai(platform_env):
 		# fallback when no target found
 		playerDir = player.direction  
 	# 👇 Call our duplicated terrain check
-	height = getHeight(player)
+	height = moveCheckPixelX(player)
 
 	# get slime distance x and direction
 	slimeD, slimeX, slime_direction = getClosestEnemyDistance(platform_env, player)
@@ -139,7 +139,7 @@ def terrain_ai(platform_env):
 		return 5  # Default fallback
 	return 5  # Default fallback
 
-def getHeight(player):
+def moveCheckPixelX(player):
 	# Player position
 	xPos = player.rect.x
 	yPos = player.rect.y
@@ -168,10 +168,10 @@ def getHeight(player):
 	pixelsToCheckx = xPos + 25
 
 	# Second pit check, closer to player
-	Height = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
+	Height = checkTerrain(pixelsToCheckx, pixelsToCheckY, world_data)
 	return Height
 
-def checkTerrain(player, pixelsToCheckx, pixelsToCheckY,world_data):
+def checkTerrain(pixelsToCheckx, pixelsToCheckY,world_data):
 	height = 0
 	tileCount = 20
 
@@ -236,7 +236,7 @@ def closest_sprite(player, sprites):
 		# calculate the distance to the player, favouring the x-axis
 		dist = math.hypot(
 			player.rect.centerx - s.rect.x,
-			(player.rect.centery - s.rect.y)*10,
+			(player.rect.centery - s.rect.y)*2.5,
 		)
 		# if this distance is less than the minimum distance found so far
 		if dist < min_dist:
