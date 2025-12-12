@@ -134,7 +134,7 @@ def agentStart():
     policy = nm.Network() 
 
     
-    #policy.load_state_dict(torch.load('./policy_-993_best.pt', weights_only=True))
+    policy.load_state_dict(torch.load('./policy_-902_best.pt', weights_only=True))
     policy.train()
     episode_returns = []
     episode_return, stepwise_returns, log_prob_actions, entropies = forward_pass(env, policy, DISCOUNT_FACTOR)
