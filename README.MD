@@ -13,7 +13,7 @@ A PyTorch-based reinforcement learning environment where an AI agent learns to p
 
 ### Windows
 ```bash
-.\ThePlatformerGame\install\requirements.txt
+.\ThePlatformerGame\install\install.bat
 ```
 
 ### Linux/Mac
