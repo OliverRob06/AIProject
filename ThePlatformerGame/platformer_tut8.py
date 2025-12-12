@@ -248,7 +248,7 @@ class platformerEnv:
 		return decidedEnemyX, minDistance
 	
 	# Get distance to closest goal or coin
-	def getClosestGoalOrCoinDistance(self, playerX, playerY):
+	def closest_sprite(self, playerX, playerY):
 		minDistance = float('inf')
 		decidedCoinX = 0
 		for coin in self.world.coin_group:
@@ -350,7 +350,7 @@ class platformerEnv:
 
 			isJumping = action == 1 or action == 3
 
-			curBlock = self.player.moveCheckPixelX() 
+			curBlock = self.player.checkHeightAtPlayerX() 
 
 			isFacingWall = curBlock == 3
 			isFacing2BlockHigh = curBlock == 2
@@ -423,7 +423,7 @@ class platformerEnv:
 					else:
 						reward-=5
 			
-			coinDirection, coinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+			coinDirection, coinDistance = self.closest_sprite(self.player.rect.x, self.player.rect.y)
 			# incentivise getting closer to goal/coin
 			if self.prevDistance > coinDistance:
 				reward += 0.2
@@ -438,7 +438,7 @@ class platformerEnv:
 			# If player reaches wins
 			if self.game_over == 1:
 				reward+=1000
-			#print (self.player.moveCheckPixelX())
+			#print (self.player.checkHeightAtPlayerX())
 			# If player reaches coin (checkpoint)
 			if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
 				# update on screen score
@@ -452,7 +452,7 @@ class platformerEnv:
 			"""
 			# Deincentivise looking at a wall
 			# If looking at a wall and facing left
-			if self.player.moveCheckPixelX() == 3 and self.player.direction == -1:
+			if self.player.checkHeightAtPlayerX() == 3 and self.player.direction == -1:
 				# If action is going towards the wall
 				if action in [0,1]:
 					reward-=60
@@ -462,7 +462,7 @@ class platformerEnv:
 					print ("Rewarded+40 for wall going away")
 
 			# If looking at a wall and facing right
-			elif self.player.moveCheckPixelX() == 3 and self.player.direction == 1:
+			elif self.player.checkHeightAtPlayerX() == 3 and self.player.direction == 1:
 				# If action is going towards the wall
 				if action in [2,3]:
 					reward-=60
@@ -476,7 +476,7 @@ class platformerEnv:
 			if action in [1, 3]:
 				# And on ground
 				if self.player.in_air == False:
-					currentRelativeHeight = self.player.moveCheckPixelX()
+					currentRelativeHeight = self.player.checkHeightAtPlayerX()
 
 					# reward jumping over a gap or small blocks
 					if currentRelativeHeight in [1, 2, -2, -3]: 
@@ -487,7 +487,7 @@ class platformerEnv:
 						reward -= 60.0 
 						print ("Rewarded-60 for jumping randomly")
 
-			if self.player.moveCheckPixelX() == 1:
+			if self.player.checkHeightAtPlayerX() == 1:
                 
                 # Walking into left block 
 				if self.player.direction == -1:
@@ -512,7 +512,7 @@ class platformerEnv:
 			"""
 			# Decentivise running into lava
 			# When faced with lava
-			if self.player.moveCheckPixelX() == -3:
+			if self.player.checkHeightAtPlayerX() == -3:
 				isRushingLeft = (self.player.direction == -1 and action == 0)
 				isRushingRight = (self.player.direction == 1 and action == 2)
 
@@ -575,7 +575,7 @@ class platformerEnv:
 					pygame.display.update()
 
 				# update prev distance to goal
-				coinDirection, self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+				coinDirection, self.prevDistance = self.closest_sprite(self.player.rect.x, self.player.rect.y)
 
 				if terminated:
 					break
@@ -627,7 +627,7 @@ class platformerEnv:
 		
 
 		# Add terrain infront of players relative height to player
-		relH = round(self.player.moveCheckPixelX()/3,3)
+		relH = round(self.player.checkHeightAtPlayerX()/3,3)
 		state_vector.append(relH)		
 		
 		
@@ -644,7 +644,7 @@ class platformerEnv:
 			state_vector.append(1)
 
 		# Add distance to nearest coin or goal
-		coinX, goalCoinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+		coinX, goalCoinDistance = self.closest_sprite(self.player.rect.x, self.player.rect.y)
 		goalCoinDistance = putInRange(goalCoinDistance,-300,300)
 		goalCoinDistance = round(goalCoinDistance/300,3)
 		state_vector.append(goalCoinDistance)
@@ -823,7 +823,7 @@ class Player():
 		
 		return game_over
 	
-	def moveCheckPixelX(self):
+	def checkHeightAtPlayerX(self):
 		# Player position
 		xPos = self.rect.x
 		yPos = self.rect.y

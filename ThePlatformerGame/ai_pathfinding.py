@@ -39,7 +39,7 @@ def terrain_ai(platform_env):
 		# fallback when no target found
 		playerDir = player.direction  
 	# 👇 Call our duplicated terrain check
-	height = moveCheckPixelX(player)
+	height = checkHeightAtPlayerX(player)
 
 	# get slime distance x and direction
 	slimeD, slimeX, slime_direction = getClosestEnemyDistance(platform_env, player)
@@ -139,7 +139,7 @@ def terrain_ai(platform_env):
 		return 5  # Default fallback
 	return 5  # Default fallback
 
-def moveCheckPixelX(player):
+def checkHeightAtPlayerX(player):
 	# Player position
 	xPos = player.rect.x
 	yPos = player.rect.y
