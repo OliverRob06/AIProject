@@ -156,7 +156,7 @@ def moveCheckPixelX(player):
 		pixelsToCheckx = xPos + 50
 
 	# initial check the block 
-	blockCheck = checkTerrain(player, pixelsToCheckx, pixelsToCheckY, world_data)
+	blockCheck = checkTerrain(pixelsToCheckx, pixelsToCheckY, world_data)
 
 	originalCheckX = pixelsToCheckx
 
