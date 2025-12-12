@@ -13,7 +13,8 @@ A PyTorch-based reinforcement learning environment where an AI agent learns to p
 
 ### Windows
 ```bash
-git clone https://github.com/pb4git/linesight && cd AIProject
+git clone https://github.com/OliverRob06/AIProject 
+cd AIProject
 .\ThePlatformerGame\install\install.bat
 ```
 
