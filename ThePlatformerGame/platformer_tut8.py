@@ -17,9 +17,9 @@ screen_width = 1000*scale
 screen_height = 1000*scale
 
 render = True
-actionOverXFrames = 8
+actionOverXFrames = 5
 show_hitboxes = False
-timeLimit = 12
+timeLimit = 10
 
 # create window
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -172,7 +172,7 @@ class platformerEnv:
 			exitY = exit.rect.y
 
 		# distances
-		enemyDistanceX, enemyDistanceY, enemyDistance  = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
+		closestEnemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
 		target = self.closest_sprite(self.player, self.world.coin_group) if self.world.coin_group else self.closest_sprite(self.player, self.world.exit_group)
 
 		# get the pixel looking at
@@ -226,7 +226,6 @@ class platformerEnv:
 		playerX = self.player.rect.centerx
 		playerY = self.player.rect.y+55
 		decidedEnemyX = 0
-		decidedEnemyY = 0
 
 		# Initialize minimum distance and closest enemy position
 		minDistance = float('inf')
@@ -245,16 +244,13 @@ class platformerEnv:
 				# Update minimum distance and closest enemy position
 				minDistance = distance
 				decidedEnemyX = enemyX
-				decidedEnemyY = enemyY
 
-		return decidedEnemyX, decidedEnemyY, minDistance
+		return decidedEnemyX, minDistance
 	
 	# Get distance to closest goal or coin
 	def getClosestGoalOrCoinDistance(self, playerX, playerY):
 		minDistance = float('inf')
 		decidedCoinX = 0
-		decidedCoinY = 0 
-
 		for coin in self.world.coin_group:
 			coinX = coin.rect.x
 			coinY = coin.rect.y
@@ -262,8 +258,7 @@ class platformerEnv:
 			if distance < minDistance:
 				minDistance = distance
 				decidedCoinX = coinX
-				decidedCoinY = coinY 
-
+		
 		for goal in self.world.exit_group:
 			goalX = goal.rect.x
 			goalY = goal.rect.y
@@ -271,9 +266,8 @@ class platformerEnv:
 			if distance < minDistance:
 				minDistance = distance
 				decidedCoinX = goalX
-				decidedCoinY = goalY 
 
-		return decidedCoinX, decidedCoinY, minDistance 
+		return decidedCoinX, minDistance
 	# get the disance to the closest sprite in a group
 	def closest_sprite(self, player, sprites):
 		# initialize minimum distance to a large value
@@ -321,7 +315,6 @@ class platformerEnv:
 	
 		# AI takes action and returns new state and reward associated
 	
-	
 	def step(self, action):
 		global render
 		global score
@@ -333,7 +326,6 @@ class platformerEnv:
 		#reward = -0.5*actionOverXFrames
 		reward = 0
 		wasInAir = self.player.in_air
-		
 		for x in range(actionOverXFrames):
 
 			# Translate the given number corresponding to an action, and make subsequent movement.
@@ -344,21 +336,101 @@ class platformerEnv:
 			if timePassed > timeLimit:
 				self.game_over = -1
 
-			# --- CRITICAL: Keep Coin/Death checks INSIDE loop to catch "flash" events ---
+
+			isDoingNothing = action == 4
+			isMiddair = self.player.in_air
+
+			isFacingLeft = self.player.direction == -1 
+			isFacingRight = self.player.direction == 1 
+
+			isWalkingLeft = action == 0
+			isJumpingLeft = action == 1
+			isWalkingRight = action == 2
+			isJumpingRight = action == 3
+
+			isJumping = action == 1 or action == 3
+
+			curBlock = self.player.getHeight() 
+
+			isFacingWall = curBlock == 3
+			isFacing2BlockHigh = curBlock == 2
+			isFacing1BlockHigh = curBlock == 1
+			isFacingNothing = curBlock == -1
+			isFacing1BlockDrop = curBlock == -2
+			isFacingDropOrLava = curBlock == -3
 			
-			# If player reaches coin (checkpoint)
-			if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
-				# update on screen score
-				score += 1
-				# Update Agent reward
-				reward += (100*(score+1))
-				# print ("Got COin +700")
+			if isFacingLeft:
 
-			# Check game is over (Win or Lose)
-			terminated = False
-			if (self.game_over == -1 or self.game_over == 1):
-				terminated = True
+				if isFacingWall:
 
+					if isWalkingLeft or isJumpingLeft:
+						reward-=20
+					
+					elif isWalkingRight or isJumpingRight:
+						reward+=8
+
+				elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
+					if isMiddair:
+							pass
+					else:
+						if isJumpingLeft:
+							# Jump over
+							reward+=10
+						elif isWalkingLeft:
+							# Waste Movement
+							reward-=20
+						elif isWalkingRight or isJumpingRight:
+							# Retreat/Back Up
+							pass
+
+				elif isFacingNothing:
+
+					if isWalkingLeft:
+						reward+=5
+					else:
+						reward-=5
+
+				
+
+			elif isFacingRight:
+
+				if isFacingWall:
+
+					if isWalkingLeft or isJumpingLeft:
+						reward+=5
+					
+					elif isWalkingRight or isJumpingRight:
+						reward-=20
+
+				elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
+					if isMiddair:
+							pass
+					else:
+						if isJumpingRight:
+							# Jump over
+							reward+=10
+						elif isWalkingRight:
+							# Waste Movement
+							reward-=20
+						elif isWalkingLeft or isJumpingLeft:
+							# Retreat/Back Up
+							pass
+
+				elif isFacingNothing:
+
+					if isWalkingRight:
+						reward+=5
+					else:
+						reward-=5
+			
+			coinDirection, coinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+			# incentivise getting closer to goal/coin
+			if self.prevDistance > coinDistance:
+				reward += 0.2
+				#print ("rewarded +2 for going to coin")
+			else:
+				reward -= 0.2
+				#print ("punished -1 for going away from coin")
 			# If player has died
 			if self.game_over == -1:
 				reward-=1000
@@ -366,6 +438,97 @@ class platformerEnv:
 			# If player reaches wins
 			if self.game_over == 1:
 				reward+=1000
+			#print (self.player.getHeight())
+			# If player reaches coin (checkpoint)
+			if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
+				# update on screen score
+				score += 1
+				# Update Agent reward
+				reward += 50
+				# print ("Got COin +700")
+
+			
+			
+			"""
+			# Deincentivise looking at a wall
+			# If looking at a wall and facing left
+			if self.player.getHeight() == 3 and self.player.direction == -1:
+				# If action is going towards the wall
+				if action in [0,1]:
+					reward-=60
+					print ("punished-60 for wall going into")
+				else:
+					reward+=40
+					print ("Rewarded+40 for wall going away")
+
+			# If looking at a wall and facing right
+			elif self.player.getHeight() == 3 and self.player.direction == 1:
+				# If action is going towards the wall
+				if action in [2,3]:
+					reward-=60
+					print ("punished-60 for wall going into")
+				else:
+					reward+=40
+					print ("Rewarded+40 for wall going away")
+
+
+			# if jumping
+			if action in [1, 3]:
+				# And on ground
+				if self.player.in_air == False:
+					currentRelativeHeight = self.player.getHeight()
+
+					# reward jumping over a gap or small blocks
+					if currentRelativeHeight in [1, 2, -2, -3]: 
+						reward += 50.0
+						print ("Rewarded+50 for jumping over block/gap")
+
+					else:
+						reward -= 60.0 
+						print ("Rewarded-60 for jumping randomly")
+
+			if self.player.getHeight() == 1:
+                
+                # Walking into left block 
+				if self.player.direction == -1:
+					if action == 0: # 0 = Walk Left (bad), 1 = Jump Left (good)
+						reward -= 20.0 
+						print("Bonk! Penalty for walking LEFT into block")
+
+                # CWalk into right block
+				elif self.player.direction == 1:
+					if action == 2: 
+						reward -= 20.0 
+						print("Bonk! Penalty for walking RIGHT into block")
+			"""
+			"""There are six discrete actions available: 
+		0: go left
+		1: go left and up
+		2: go right
+		3: go right and up
+		4: do nothing
+		"""
+			
+			"""
+			# Decentivise running into lava
+			# When faced with lava
+			if self.player.getHeight() == -3:
+				isRushingLeft = (self.player.direction == -1 and action == 0)
+				isRushingRight = (self.player.direction == 1 and action == 2)
+
+				if isRushingLeft or isRushingRight:
+					reward -= 100.0
+					print ("Rushing -100")
+				else:
+					print ("didnt rush into lava, self.player.direction", self.player.direction , "action ", action)
+
+			"""
+			
+			
+			# Check game is over (Win or Lose)
+			terminated = False
+			if (self.game_over == -1 or self.game_over == 1):
+				terminated = True
 
 			if render:
 				# Update Screen
@@ -373,20 +536,20 @@ class platformerEnv:
 				screen.blit(sun_img, (100, 100))
 				self.world.draw()
 
-				# draw player
-				screen.blit(self.player.image, self.player.rect)
+			# draw player
+			screen.blit(self.player.image, self.player.rect)
 
-				# Handle Pygame events (keep window from freezing)
-				for event in pygame.event.get():
-					if event.type == pygame.QUIT:
-						pygame.quit()
-						sys.exit()
+			# Handle Pygame events (keep window from freezing)
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
 
-				# Calculate time survived
-				if self.gameWon >= 1:
-					current_time = self.wonTime
-				else:
-					current_time = pygame.time.get_ticks() - self.start_time
+			# Calculate time survived
+			if self.gameWon >= 1:
+				current_time = self.wonTime
+			else:
+				current_time = pygame.time.get_ticks() - self.start_time
 
 				# Update timing variables and screen
 				seconds = current_time // 1000
@@ -412,7 +575,7 @@ class platformerEnv:
 					pygame.display.update()
 
 				# update prev distance to goal
-				coinDirectionX, coinDirectionY, self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+				coinDirection, self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 
 				if terminated:
 					break
@@ -422,117 +585,12 @@ class platformerEnv:
 				wasInAir = self.player.in_air
 				if self.game_over == -1:
 					break
-
-
-		isDoingNothing = action == 4
-		isMiddair = self.player.in_air
-
-		isFacingLeft = self.player.direction == -1 
-		isFacingRight = self.player.direction == 1 
-
-		isWalkingLeft = action == 0
-		isJumpingLeft = action == 1
-		isWalkingRight = action == 2
-		isJumpingRight = action == 3
-
-		isJumping = action == 1 or action == 3
-
-		curBlock = self.player.moveCheckPixelX() 
-
-		isFacingWall = curBlock == 3
-		isFacing2BlockHigh = curBlock == 2
-		isFacing1BlockHigh = curBlock == 1
-		isFacingNothing = curBlock == -1
-		isFacing1BlockDrop = curBlock == -2
-		isFacingDropOrLava = curBlock == -3
-		
-		if isFacingLeft:
-
-			if isFacingWall:
-
-				if isWalkingLeft or isJumpingLeft:
-					reward-=8
-				
-				elif isWalkingRight or isJumpingRight:
-					#reward+=5
-					pass
-
-			elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
-				#if isMiddair:
-				#		pass
-				#else:
-				
-				if isJumpingLeft:
-					# Jump over
-					reward+=20
-				elif isWalkingLeft:
-					# Waste Movement
-					reward-=50
-				elif isWalkingRight or isJumpingRight:
-					# Retreat/Back Up
-					pass
-
-			elif isFacingNothing:
-
-				if isWalkingLeft:
-					reward+=0.5
-				else:
-					reward-=0.5
-
 			
-
-		elif isFacingRight:
-
-			if isFacingWall:
-
-				if isWalkingLeft or isJumpingLeft:
-					#reward+=8
-					pass
-				
-				elif isWalkingRight or isJumpingRight:
-					reward-=5
-					
-
-			elif isFacing1BlockDrop or isFacingDropOrLava or isFacing1BlockHigh or isFacing2BlockHigh:
-				#if isMiddair:
-				#		pass
-				#else:
-				if isJumpingRight:
-					# Jump over
-					reward+=10
-				elif isWalkingRight:
-					# Waste Movement
-					reward-=50
-				elif isWalkingLeft or isJumpingLeft:
-					# Retreat/Back Up
-					pass
-
-			elif isFacingNothing:
-
-				if isWalkingRight:
-					reward+=0.5
-				else:
-					reward-=0.5
-		
-		coinDistanceX, coinDistanceY, coinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
-		# incentivise getting closer to goal/coin
-		if self.prevDistance > coinDistance:
-			reward += 10
-			#print ("rewarded +2 for going to coin")
-		else:
-			reward -= 1
-			#print ("punished -1 for going away from coin")
-			
-		self.prevDistance = coinDistance
-
-		print("curblock:", curBlock)
-		print("action:", action)
-		print("reward:", reward)
 		# Return new observation given new state, reward calculated and game over
 		return self.get_state(), reward, terminated, {}
-		
-		#if platformE.frame % 20 == 0:
-		#	platformE.d14Vector()
+			
+			#if platformE.frame % 20 == 0:
+			#	platformE.d14Vector()
 
 	# Returns observation of current state
 	def get_state(self):
@@ -555,8 +613,7 @@ class platformerEnv:
 		
 		
 		# Adds player vertical velocity 
-		verticalV = self.player.vel_y / 15.0 
-		verticalV = putInRange(verticalV, -1, 1) # Normalized -1 to 1
+		verticalV = round((self.player.rect.y - (self.player.rect.y - self.player.vel_y) / 15)/1000,3)
 		state_vector.append(verticalV)
 		
 
@@ -575,28 +632,28 @@ class platformerEnv:
 		
 		
 		# Add distance to nearest enemy
-		enemyDistanceX, enemyDistanceY, enemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
+		enemyX, enemyDistance = self.getClosestEnemyDistance(self.player.rect.x, self.player.rect.y)
 		enemyDistance = putInRange(enemyDistance,-300,300)
 		enemyDistance = round(enemyDistance/300,3)
 		state_vector.append(enemyDistance)
 		
-		enemyXDiff = enemyDistanceX - self.player.rect.x
-		enemyYDiff = enemyDistanceY - self.player.rect.y
-		state_vector.append(round(enemyXDiff / 1000.0, 3))
-		state_vector.append(round(enemyYDiff / 1000.0, 3))
+		# Enemy Direction
+		if self.player.rect.x>enemyX:
+			state_vector.append(0)
+		else:
+			state_vector.append(1)
 
 		# Add distance to nearest coin or goal
-		coinDistanceX, coinDistanceY, goalCoinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
+		coinX, goalCoinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 		goalCoinDistance = putInRange(goalCoinDistance,-300,300)
 		goalCoinDistance = round(goalCoinDistance/300,3)
 		state_vector.append(goalCoinDistance)
 
-		coinXDiff = coinDistanceX - self.player.rect.x
-		coinYDiff = coinDistanceY - self.player.rect.y
-		state_vector.append(round(coinXDiff / 1000.0, 3))
-		state_vector.append(round(coinYDiff / 1000.0,3))
-
-		
+		# Coin Direction
+		if self.player.rect.x>coinX:
+			state_vector.append(0)
+		else:
+			state_vector.append(1)
 		
 		# Display Values
 		if False:
