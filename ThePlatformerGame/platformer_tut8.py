@@ -350,7 +350,7 @@ class platformerEnv:
 
 			isJumping = action == 1 or action == 3
 
-			curBlock = self.player.getHeight() 
+			curBlock = self.player.moveCheckPixelX() 
 
 			isFacingWall = curBlock == 3
 			isFacing2BlockHigh = curBlock == 2
@@ -438,7 +438,7 @@ class platformerEnv:
 			# If player reaches wins
 			if self.game_over == 1:
 				reward+=1000
-			#print (self.player.getHeight())
+			#print (self.player.moveCheckPixelX())
 			# If player reaches coin (checkpoint)
 			if pygame.sprite.spritecollide(self.player, self.world.coin_group, True):
 				# update on screen score
@@ -452,7 +452,7 @@ class platformerEnv:
 			"""
 			# Deincentivise looking at a wall
 			# If looking at a wall and facing left
-			if self.player.getHeight() == 3 and self.player.direction == -1:
+			if self.player.moveCheckPixelX() == 3 and self.player.direction == -1:
 				# If action is going towards the wall
 				if action in [0,1]:
 					reward-=60
@@ -462,7 +462,7 @@ class platformerEnv:
 					print ("Rewarded+40 for wall going away")
 
 			# If looking at a wall and facing right
-			elif self.player.getHeight() == 3 and self.player.direction == 1:
+			elif self.player.moveCheckPixelX() == 3 and self.player.direction == 1:
 				# If action is going towards the wall
 				if action in [2,3]:
 					reward-=60
@@ -476,7 +476,7 @@ class platformerEnv:
 			if action in [1, 3]:
 				# And on ground
 				if self.player.in_air == False:
-					currentRelativeHeight = self.player.getHeight()
+					currentRelativeHeight = self.player.moveCheckPixelX()
 
 					# reward jumping over a gap or small blocks
 					if currentRelativeHeight in [1, 2, -2, -3]: 
@@ -487,7 +487,7 @@ class platformerEnv:
 						reward -= 60.0 
 						print ("Rewarded-60 for jumping randomly")
 
-			if self.player.getHeight() == 1:
+			if self.player.moveCheckPixelX() == 1:
                 
                 # Walking into left block 
 				if self.player.direction == -1:
@@ -512,7 +512,7 @@ class platformerEnv:
 			"""
 			# Decentivise running into lava
 			# When faced with lava
-			if self.player.getHeight() == -3:
+			if self.player.moveCheckPixelX() == -3:
 				isRushingLeft = (self.player.direction == -1 and action == 0)
 				isRushingRight = (self.player.direction == 1 and action == 2)
 
