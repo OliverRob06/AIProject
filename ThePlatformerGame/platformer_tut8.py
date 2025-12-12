@@ -248,7 +248,7 @@ class platformerEnv:
 		return decidedEnemyX, minDistance
 	
 	# Get distance to closest goal or coin
-	def closest_sprite(self, playerX, playerY):
+	def getClosestGoalOrCoinDistance(self, playerX, playerY):
 		minDistance = float('inf')
 		decidedCoinX = 0
 		for coin in self.world.coin_group:
@@ -423,7 +423,7 @@ class platformerEnv:
 					else:
 						reward-=5
 			
-			coinDirection, coinDistance = self.closest_sprite(self.player.rect.x, self.player.rect.y)
+			coinDirection, coinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 			# incentivise getting closer to goal/coin
 			if self.prevDistance > coinDistance:
 				reward += 0.2
@@ -575,7 +575,7 @@ class platformerEnv:
 					pygame.display.update()
 
 				# update prev distance to goal
-				coinDirection, self.prevDistance = self.closest_sprite(self.player.rect.x, self.player.rect.y)
+				coinDirection, self.prevDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 
 				if terminated:
 					break
@@ -644,7 +644,7 @@ class platformerEnv:
 			state_vector.append(1)
 
 		# Add distance to nearest coin or goal
-		coinX, goalCoinDistance = self.closest_sprite(self.player.rect.x, self.player.rect.y)
+		coinX, goalCoinDistance = self.getClosestGoalOrCoinDistance(self.player.rect.x, self.player.rect.y)
 		goalCoinDistance = putInRange(goalCoinDistance,-300,300)
 		goalCoinDistance = round(goalCoinDistance/300,3)
 		state_vector.append(goalCoinDistance)
