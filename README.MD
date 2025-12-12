@@ -22,7 +22,7 @@ git clone https://github.com/pb4git/linesight && cd AIProject
 
 1. **Run the main menu**:
 ```bash
-python \ThePlatformerGame\run.py
+python .\ThePlatformerGame\run.py
 ```
 
 2. **Select your mode**:
